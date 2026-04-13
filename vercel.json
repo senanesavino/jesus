@@ -1,8 +1,16 @@
 {
   "crons": [
     {
-      "path": "/api/send-daily-push",
+      "path": "/api/send-daily-push?periodo=manha",
       "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/send-daily-push?periodo=tarde",
+      "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/send-daily-push?periodo=noite",
+      "schedule": "0 0 * * *"
     }
   ]
 }

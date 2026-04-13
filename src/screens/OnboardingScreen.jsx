@@ -58,6 +58,12 @@ export default function OnboardingScreen() {
     if (isLast) {
       setRequestingPush(true);
       try {
+        // Salvar a preferência do usuário (Manhã, Tarde, Noite) como etiqueta invisível no celular
+        const userPeriod = preferences.period || 'manhã';
+        if (OneSignal.User) {
+          OneSignal.User.addTag('periodo', userPeriod);
+        }
+
         // Tenta o prompt nativo (mais direto)
         if (OneSignal.Notifications) {
           await OneSignal.Notifications.requestPermission();
