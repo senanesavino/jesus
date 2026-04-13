@@ -1,0 +1,70 @@
+export const devotionals = {
+  morning: {
+    greeting: 'Bom dia',
+    period: 'manhã',
+    title: 'Há paz para hoje',
+    subtitle: 'Hoje Deus quer acalmar o seu coração.',
+    message: 'Mesmo que o seu coração acorde cansado, Deus continua sendo refúgio, força e paz para a sua jornada. Ele já chegou neste dia antes de você. Cada passo que você der hoje, Ele estará ao seu lado.',
+    verse: 'Tu conservarás em paz aquele cuja mente está firme em ti.',
+    verseRef: 'Isaías 26:3',
+    reflection: 'Nem todo dia começa leve, mas todo dia pode começar com Deus. Entregue a Ele o seu coração antes de entregar ao mundo a sua energia.',
+    prayer: 'Senhor, guarda a minha mente, acalma o meu coração e me ajuda a viver este dia contigo. Que a Tua presença me guie em cada decisão e me dê forças para caminhar com fé. Amém.',
+    audioDuration: '2:15',
+  },
+  night: {
+    greeting: 'Boa noite',
+    period: 'noite',
+    title: 'Entregue o dia e descanse',
+    subtitle: 'Descanse. Deus continua cuidando de tudo.',
+    message: 'Você não precisa levar para a noite todos os pesos do dia. Deus também cuida de você enquanto você descansa. Solte cada preocupação e permita que o silêncio da noite renove as suas forças.',
+    verse: 'Em paz me deito e logo adormeço, porque só tu, Senhor, me fazes viver em segurança.',
+    verseRef: 'Salmos 4:8',
+    reflection: 'O dia terminou. Agora é tempo de descansar, respirar fundo e confiar que Deus continua trabalhando mesmo no silêncio.',
+    prayer: 'Senhor, recebe o meu cansaço, guarda o meu sono e me dá uma noite de paz. Obrigado por mais um dia vivido na Tua presença. Amém.',
+    audioDuration: '3:00',
+  },
+};
+
+export const verseOfTheDay = {
+  text: 'Porque eu sei os planos que tenho para vocês, diz o Senhor, planos de prosperidade e não de calamidade, para dar-lhes um futuro e uma esperança.',
+  reference: 'Jeremias 29:11',
+};
+
+export const additionalDevotionals = [
+  {
+    id: 1,
+    title: 'Deus já chegou antes de você neste dia',
+    subtitle: 'Mesmo na correria, há paz.',
+    verse: 'Este é o dia que o Senhor fez; regozijemo-nos e alegremo-nos nele.',
+    verseRef: 'Salmos 118:24',
+    message: 'Mesmo que o seu coração esteja cansado, Deus já está presente neste dia antes mesmo dos seus primeiros passos.',
+    reflection: 'Você não precisa entender tudo agora. Apenas caminhe com fé. A graça de Deus já está diante de você.',
+    prayer: 'Senhor, entrega o meu coração em Tuas mãos. Me dá paz, direção e força para viver este dia contigo. Amém.',
+    audioDuration: '1:45',
+    period: 'manhã',
+  },
+  {
+    id: 2,
+    title: 'A graça é suficiente',
+    subtitle: 'Você não precisa ser perfeito.',
+    verse: 'A minha graça te basta, porque o meu poder se aperfeiçoa na fraqueza.',
+    verseRef: '2 Coríntios 12:9',
+    message: 'Deus não espera perfeição. Ele espera um coração aberto. A Sua graça cobre cada falha, cada medo, cada insegurança.',
+    reflection: 'Pare de se cobrar tanto. A graça de Deus já alcançou você hoje, exatamente como você é.',
+    prayer: 'Jesus, obrigado pela Tua graça que me sustenta. Me ajuda a descansar na Tua suficiência. Amém.',
+    audioDuration: '2:00',
+    period: 'manhã',
+  },
+  {
+    id: 3,
+    title: 'O silêncio que restaura',
+    subtitle: 'Na quietude, Deus fala.',
+    verse: 'Aquietai-vos e sabei que eu sou Deus.',
+    verseRef: 'Salmos 46:10',
+    message: 'No meio de tanto barulho, Deus convida você ao silêncio. Não para fugir do mundo, mas para ouvir a voz que acalma tudo.',
+    reflection: 'Reserve apenas um minuto de silêncio agora. Respire. Deus está aqui.',
+    prayer: 'Pai, ensina o meu coração a se aquietar diante de Ti. No silêncio, fala comigo. Amém.',
+    audioDuration: '2:30',
+    period: 'noite',
+  },
+];
