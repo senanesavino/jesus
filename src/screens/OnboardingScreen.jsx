@@ -58,8 +58,13 @@ export default function OnboardingScreen() {
     if (isLast) {
       setRequestingPush(true);
       try {
-        // Pedir permissão ao usuário para push notification nativa
-        await OneSignal.Slidedown.promptPush();
+        // Tenta o prompt nativo (mais direto)
+        if (OneSignal.Notifications) {
+          await OneSignal.Notifications.requestPermission();
+        } else {
+          // Fallback para Slidedown caso o nativo não esteja disponível
+          await OneSignal.Slidedown.promptPush({ force: true });
+        }
       } catch (e) {
         console.error('Push error:', e);
       } finally {

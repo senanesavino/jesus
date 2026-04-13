@@ -62,7 +62,8 @@ function AppContent() {
         await OneSignal.init({
           appId: appId,
           allowLocalhostAsSecureOrigin: true,
-          notifyButton: { enable: false }, // we will ask manually
+          notifyButton: { enable: false },
+          welcomeNotification: { enable: true },
         });
         
         // Link user to OneSignal if authenticated
