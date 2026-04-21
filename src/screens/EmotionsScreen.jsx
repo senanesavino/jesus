@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Heart, Share2, Play } from 'lucide-react';
@@ -11,8 +11,16 @@ export default function EmotionsScreen() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toggleFavorite, isFavorite, openShareModal, generateEmotionInsight } = useStore();
-  const [selected, setSelected] = useState(location.state?.selectedEmotion || null);
+  const [selected, setSelected] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.selectedEmotion) {
+      handleSelect(location.state.selectedEmotion);
+      // Limpa para não disparar de novo se recarregar
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   const handleSelect = async (emotion) => {
     setIsGenerating(true);
