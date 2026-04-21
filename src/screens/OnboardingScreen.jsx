@@ -55,27 +55,28 @@ export default function OnboardingScreen() {
 
   const handleNext = async () => {
     if (!selectedValue) return;
+    
     if (isLast) {
       setRequestingPush(true);
+      
+      // Conclui o onboarding IMEDIATAMENTE para não travar a tela do usuário
+      completeOnboarding();
+      
       try {
-        // Salvar a preferência do usuário (Manhã, Tarde, Noite) como etiqueta invisível no celular
+        // Salvar a preferência do usuário como etiqueta invisível
         const userPeriod = preferences.period || 'manhã';
-        if (OneSignal.User) {
+        if (OneSignal && OneSignal.User) {
           OneSignal.User.addTag('periodo', userPeriod);
         }
 
-        // Tenta o prompt nativo (mais direto)
-        if (OneSignal.Notifications) {
+        // Continua rodando no fundo para subir o prompt nativo
+        if (OneSignal && OneSignal.Notifications) {
           await OneSignal.Notifications.requestPermission();
-        } else {
-          // Fallback para Slidedown caso o nativo não esteja disponível
-          await OneSignal.Slidedown.promptPush({ force: true });
         }
       } catch (e) {
         console.error('Push error:', e);
       } finally {
         setRequestingPush(false);
-        completeOnboarding();
       }
     } else {
       setCurrentStep(currentStep + 1);
