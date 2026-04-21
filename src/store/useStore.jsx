@@ -227,52 +227,56 @@ export function StoreProvider({ children }) {
 
         if (insertError) throw insertError;
 
-        // --- GERAÇÃO DE ÁUDIO (ElevenLabs Premium) ---
+        // --- GERAÇÃO DE ÁUDIO (Google Cloud TTS Neural2) ---
         try {
-          const ELEVENLABS_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
-          const voiceId = 'EXAVITQu4vr4xnSDxMaL'; // Sarah
-          
-          if (ELEVENLABS_KEY) {
-            const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+          if (geminiKey) {
+            setState(s => ({ ...s, debugInfo: 'Gerando voz (Google Neural2)...' }));
+            
+            const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
               method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'xi-api-key': ELEVENLABS_KEY 
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                text: devocional.prayer,
-                model_id: 'eleven_multilingual_v2',
-                voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+                input: { text: devocional.prayer },
+                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-A', ssmlGender: 'FEMALE' },
+                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
               })
             });
 
             if (response.ok) {
-              const audioBuffer = await response.arrayBuffer();
-              const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+              const { audioContent } = await response.json();
+              if (audioContent) {
+                const sanitizedBase64 = audioContent.trim().replace(/\s/g, '');
+                const byteCharacters = atob(sanitizedBase64);
+                const byteArray = new Uint8Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                  byteArray[i] = byteCharacters.charCodeAt(i);
+                }
+                const audioBlob = new Blob([byteArray], { type: 'audio/mpeg' });
 
-              const fileName = `daily_${today}.mp3`;
-              
-              // Upload to Supabase Storage
-              const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('devotionals')
-                .upload(fileName, audioBlob, { contentType: 'audio/mpeg', upsert: true });
-
-              if (!uploadError) {
-                const { data: { publicUrl } } = supabase.storage
-                  .from('devotionals')
-                  .getPublicUrl(fileName);
-
-                await supabase
-                  .from('daily_messages')
-                  .update({ audio_url: publicUrl })
-                  .eq('id', insertedMsg.id);
+                const fileName = `daily_${today}.mp3`;
                 
-                insertedMsg.audio_url = publicUrl;
+                // Upload to Supabase Storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                  .from('devotionals')
+                  .upload(fileName, audioBlob, { contentType: 'audio/mpeg', upsert: true });
+
+                if (!uploadError) {
+                  const { data: { publicUrl } } = supabase.storage
+                    .from('devotionals')
+                    .getPublicUrl(fileName);
+
+                  await supabase
+                    .from('daily_messages')
+                    .update({ audio_url: publicUrl })
+                    .eq('id', insertedMsg.id);
+                  
+                  insertedMsg.audio_url = publicUrl;
+                }
               }
             }
           }
         } catch (audioErr) {
-          console.error('Erro na geração de áudio ElevenLabs:', audioErr);
+          console.error('Erro na geração de áudio Google:', audioErr);
         }
         
         setState(s => ({ ...s, dailyMessage: insertedMsg }));
@@ -328,56 +332,58 @@ export function StoreProvider({ children }) {
             customPrayer = JSON.parse(resultText);
           }
 
-          // --- GERAÇÃO DE ÁUDIO (ElevenLabs Premium) ---
-          const ELEVENLABS_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
-          const voiceId = 'EXAVITQu4vr4xnSDxMaL'; // Sarah
-          
-          if (ELEVENLABS_KEY) {
+          // --- GERAÇÃO DE ÁUDIO (Google Cloud TTS Neural2) ---
+          if (geminiKey) {
             try {
-              setState(s => ({ ...s, debugInfo: 'Gerando voz (ElevenLabs)...' }));
+              setState(s => ({ ...s, debugInfo: 'Gerando voz (Google Neural2)...' }));
               
-              const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+              const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
                 method: 'POST',
-                headers: { 
-                  'Content-Type': 'application/json',
-                  'xi-api-key': ELEVENLABS_KEY 
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  text: customPrayer.prayer,
-                  model_id: 'eleven_multilingual_v2',
-                  voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+                  input: { text: customPrayer.prayer },
+                  voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
+                  audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
                 })
               });
               
               if (response.ok) {
-                const audioBuffer = await response.arrayBuffer();
-                const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-                
-                // --- LÓGICA DE SALVAMENTO NO SUPABASE ---
-                if (!isCustom && prayerId) {
-                  const fileName = `fixed_prayer_${prayerId}_v2.mp3`;
-                  const { error: uploadError } = await supabase.storage
-                    .from('devotionals')
-                    .upload(fileName, audioBlob, { contentType: 'audio/mpeg', upsert: true });
-
-                  if (!uploadError) {
-                    const { data: { publicUrl } } = supabase.storage
+                const { audioContent } = await response.json();
+                if (audioContent) {
+                  const sanitizedBase64 = audioContent.trim().replace(/\s/g, '');
+                  const byteCharacters = atob(sanitizedBase64);
+                  const byteArray = new Uint8Array(byteCharacters.length);
+                  for (let i = 0; i < byteCharacters.length; i++) {
+                    byteArray[i] = byteCharacters.charCodeAt(i);
+                  }
+                  const audioBlob = new Blob([byteArray], { type: 'audio/mpeg' });
+                  
+                  // --- LÓGICA DE SALVAMENTO NO SUPABASE ---
+                  if (!isCustom && prayerId) {
+                    const fileName = `fixed_prayer_${prayerId}_v2.mp3`;
+                    const { error: uploadError } = await supabase.storage
                       .from('devotionals')
-                      .getPublicUrl(fileName);
-                    customPrayer.audio_url = publicUrl;
+                      .upload(fileName, audioBlob, { contentType: 'audio/mpeg', upsert: true });
+
+                    if (!uploadError) {
+                      const { data: { publicUrl } } = supabase.storage
+                        .from('devotionals')
+                        .getPublicUrl(fileName);
+                      customPrayer.audio_url = publicUrl;
+                    } else {
+                      customPrayer.audio_url = URL.createObjectURL(audioBlob);
+                    }
                   } else {
                     customPrayer.audio_url = URL.createObjectURL(audioBlob);
                   }
-                } else {
-                  customPrayer.audio_url = URL.createObjectURL(audioBlob);
                 }
                 
-                setState(s => ({ ...s, debugInfo: 'Voz Sarah (ElevenLabs) Pronta!' }));
+                setState(s => ({ ...s, debugInfo: 'Voz Google Neural2 Pronta!' }));
               } else {
-                throw new Error(`ElevenLabs Error: ${response.status}`);
+                throw new Error(`Google TTS Error: ${response.status}`);
               }
             } catch (e) {
-              console.warn('ElevenLabs falhou, usando voz nativa...', e.message);
+              console.warn('Google TTS falhou, usando voz nativa...', e.message);
               customPrayer.audio_url = 'native'; 
               setState(s => ({ ...s, debugInfo: 'Voz reserva ativa' }));
             }

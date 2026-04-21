@@ -10,8 +10,9 @@ import useStore from '../store/useStore';
 export default function EmotionsScreen() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggleFavorite, isFavorite, openShareModal } = useStore();
+  const { toggleFavorite, isFavorite, openShareModal, generateAIPrayer } = useStore();
   const [selected, setSelected] = useState(location.state?.selectedEmotion || null);
+  const [loadingAudio, setLoadingAudio] = useState(false);
 
   const handleSelect = (emotion) => {
     setSelected(emotion);
@@ -19,6 +20,30 @@ export default function EmotionsScreen() {
 
   const handleBack = () => {
     setSelected(null);
+    setLoadingAudio(false);
+  };
+
+  const handlePlayAudio = async () => {
+    if (!selected || loadingAudio) return;
+    if (selected.audio_url) return;
+
+    setLoadingAudio(true);
+    try {
+      const generated = await generateAIPrayer(
+        selected.name, 
+        false, 
+        `emotion-${selected.id}`, 
+        selected.prayer
+      );
+      
+      if (generated && generated.audio_url) {
+        setSelected(prev => ({ ...prev, audio_url: generated.audio_url }));
+      }
+    } catch (err) {
+      console.error('Failed to generate emotion audio:', err);
+    } finally {
+      setLoadingAudio(false);
+    }
   };
 
   if (selected) {
@@ -124,19 +149,41 @@ export default function EmotionsScreen() {
             transition={{ delay: 0.5 }}
             style={{ marginBottom: '16px' }}
           >
-            <AudioPlayer
-              prayer={{
-                id: `emotion-${selected.id}`,
-                title: `Oração: ${selected.name}`,
-                category: selected.name,
-                duration: selected.audioDuration,
-                durationSeconds: 120,
-                emoji: selected.emoji,
-                bgGradient: `linear-gradient(135deg, ${selected.color} 0%, ${selected.color}88 100%)`,
-              }}
-              compact
-            />
+            {loadingAudio ? (
+              <div className="card flex items-center justify-center gap-md" style={{ padding: '24px' }}>
+                <div className="spinner" style={{ width: 24, height: 24, border: `2px solid ${selected.bgColor}`, borderTopColor: selected.color }} />
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Preparando oração...</span>
+              </div>
+            ) : (
+              <AudioPlayer
+                prayer={{
+                  id: `emotion-${selected.id}`,
+                  title: `Oração: ${selected.name}`,
+                  category: selected.name,
+                  duration: selected.audioDuration,
+                  durationSeconds: 120,
+                  emoji: selected.emoji,
+                  bgGradient: `linear-gradient(135deg, ${selected.color} 0%, ${selected.color}88 100%)`,
+                  audio_url: selected.audio_url,
+                  prayer: selected.prayer
+                }}
+                compact
+              />
+            )}
           </motion.div>
+
+          {!selected.audio_url && !loadingAudio && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="btn btn-primary btn-block"
+              style={{ marginBottom: '16px', background: selected.color }}
+              onClick={handlePlayAudio}
+            >
+              <Play size={18} />
+              Ouvir esta oração
+            </motion.button>
+          )}
 
           {/* Actions */}
           <motion.div
