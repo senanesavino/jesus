@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import logoBrand from '../assets/logo-story.png';
 
 const StoryCard = React.forwardRef(({ content }, ref) => {
+  const [logoBase64, setLogoBase64] = useState(null);
+
+  useEffect(() => {
+    // Carrega a imagem nativamente e converte para texto Base64, à prova d'água de bloqueios do iOS/html-to-image
+    fetch(logoBrand)
+      .then(r => r.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onloadend = () => setLogoBase64(reader.result);
+        reader.readAsDataURL(blob);
+      })
+      .catch(err => console.error("Erro ao converter logo:", err));
+  }, []);
+
   if (!content) return null;
 
   const verse = content.verse || content.text;
@@ -21,11 +35,11 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '120px 80px',
-        position: 'fixed', // Mudança para fixed
+        position: 'fixed',
         left: 0,
         top: 0,
-        zIndex: -2000, // Muito atrás de tudo
-        visibility: 'visible', // Força o navegador a desenhar
+        zIndex: -2000,
+        visibility: 'visible',
         pointerEvents: 'none',
         boxSizing: 'border-box',
         fontFamily: "'Playfair Display', serif"
@@ -46,18 +60,19 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
       }} />
 
       {/* Logo Transparente */}
-      <img 
-        crossOrigin="anonymous"
-        src={logoBrand} 
-        alt="Logo" 
-        style={{ 
-          width: '240px', 
-          height: '240px', 
-          marginBottom: '80px',
-          zIndex: 1,
-          filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.05))'
-        }} 
-      />
+      {logoBase64 && (
+        <img 
+          src={logoBase64} 
+          alt="Logo" 
+          style={{ 
+            width: '240px', 
+            height: '240px', 
+            marginBottom: '80px',
+            zIndex: 1,
+            filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.05))'
+          }} 
+        />
+      )}
 
       {/* Título */}
       <div style={{
