@@ -1,21 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import logoBrand from '../assets/logo-story.png';
+import React from 'react';
 
 const StoryCard = React.forwardRef(({ content }, ref) => {
-  const [logoBase64, setLogoBase64] = useState(null);
-
-  useEffect(() => {
-    // Carrega a imagem nativamente e converte para texto Base64, à prova d'água de bloqueios do iOS/html-to-image
-    fetch(logoBrand)
-      .then(r => r.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.onloadend = () => setLogoBase64(reader.result);
-        reader.readAsDataURL(blob);
-      })
-      .catch(err => console.error("Erro ao converter logo:", err));
-  }, []);
-
   if (!content) return null;
 
   const verse = content.verse || content.text;
@@ -59,22 +44,34 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
         zIndex: 0
       }} />
 
-      {/* Logo Transparente */}
-      {logoBase64 && (
-        <div 
-          style={{ 
-            width: '240px', 
-            height: '240px', 
-            marginBottom: '80px',
-            zIndex: 1,
-            filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.05))',
-            backgroundImage: `url(${logoBase64})`,
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }} 
-        />
-      )}
+      {/* Logo Tipográfica Segura (100% suportada) */}
+      <div style={{
+        marginBottom: '100px',
+        zIndex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '16px'
+      }}>
+        <div style={{
+          fontSize: '72px',
+          fontFamily: "'Playfair Display', serif",
+          color: '#5F734E',
+          lineHeight: '1',
+          fontWeight: '700',
+          letterSpacing: '-0.02em',
+          filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.05))'
+        }}>
+          ComDeusHoje
+        </div>
+        <div style={{
+          width: '60px',
+          height: '3px',
+          background: '#F08B00', /* accent-gold */
+          borderRadius: '4px',
+          opacity: 0.8
+        }} />
+      </div>
 
       {/* Título */}
       <div style={{
