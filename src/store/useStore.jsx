@@ -282,7 +282,6 @@ export function StoreProvider({ children }) {
         setState(s => ({ ...s, dailyMessage: insertedMsg }));
       } catch (error) {
         console.error('Erro ao gerar mensagem automática:', error);
-        // Não define lastError aqui se for um erro de rede, para não poluir o player
       }
     }, [state.streak]),
 
@@ -302,7 +301,7 @@ export function StoreProvider({ children }) {
             customPrayer = { title: topic, prayer: forcedText };
           } else {
             const prompt = isCustom 
-              ? `Você é um conselheiro cristão amoroso. Gere uma oração poderosa e confortante para alguém que está sentindo: "${topic}". Siga estritamente este formato JSON: {"title": "Oração para afastar a ${topic}", "prayer": "O texto completo da oração (máximo 400 caracteres)."}`
+              ? `Você é um conselheiro cristão amoroso. Gere uma oração poderosa e confortante para alguém que está sentindo: "${topic}". Siga estritamente este formato JSON: {"title": "Oração para afastar a ${topic}", "prayer": "O texto completa da oração (máximo 400 caracteres)."}`
               : `Você é um conselheiro cristão amoroso. Gere uma oração poderosa sobre o tema: "${topic}". Siga estritamente este formato JSON: {"title": "${topic}", "prayer": "O texto completo da oração (máximo 400 caracteres)."}`;
 
             const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
@@ -398,6 +397,88 @@ export function StoreProvider({ children }) {
       }
 
       setState(s => ({ ...s, lastError: `O servidor do Google está instável (Erro 503). Tente novamente em alguns segundos.` }));
+      throw lastErr;
+    }, []),
+
+    generateEmotionInsight: useCallback(async (emotionName) => {
+      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const model = 'gemini-2.5-flash';
+      let lastErr = null;
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          setState(s => ({ ...s, lastError: null, debugInfo: 'Preparando sua palavra...' }));
+          
+          const prompt = `Você é um conselheiro cristão amoroso. O usuário está se sentindo: "${emotionName}". 
+          Gere um conteúdo de conforto e direção espiritual profundo e encorajador.
+          Siga estritamente este formato JSON:
+          {
+            "title": "Um título encorajador de 4-6 palavras focado em ${emotionName}",
+            "message": "Uma mensagem de 2 parágrafos curtos falando diretamente ao coração.",
+            "verse": "Um versículo bíblico relevante que traga paz sobre ${emotionName} (NVI)",
+            "verseRef": "Livro Capitulo:Versiculo",
+            "reflection": "Uma reflexão curta de 1-2 frases para meditar no dia",
+            "prayer": "Uma oração poderosa de 2-3 frases em primeira pessoa (Senhor, eu Te entrego...)"
+          }`;
+
+          const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          });
+
+          if (!aiResponse.ok) {
+            if (aiResponse.status === 503 || aiResponse.status === 429) {
+              await new Promise(r => setTimeout(r, 1500 * attempt));
+              continue; 
+            }
+            throw new Error(`Google AI Error: ${aiResponse.status}`);
+          }
+
+          const aiData = await aiResponse.json();
+          let resultText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!resultText) throw new Error('A IA não retornou texto.');
+          
+          resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+          const insight = JSON.parse(resultText);
+
+          // GERA O ÁUDIO AUTOMATICAMENTE PARA A ORAÇÃO
+          setState(s => ({ ...s, debugInfo: 'Sintonizando áudio...' }));
+          
+          const ttsResponse = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              input: { text: insight.prayer },
+              voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
+              audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
+            })
+          });
+
+          if (ttsResponse.ok) {
+            const { audioContent } = await ttsResponse.json();
+            if (audioContent) {
+              const sanitizedBase64 = audioContent.trim().replace(/\s/g, '');
+              const byteCharacters = atob(sanitizedBase64);
+              const byteArray = new Uint8Array(byteCharacters.length);
+              for (let i = 0; i < byteCharacters.length; i++) {
+                byteArray[i] = byteCharacters.charCodeAt(i);
+              }
+              const audioBlob = new Blob([byteArray], { type: 'audio/mpeg' });
+              insight.audio_url = URL.createObjectURL(audioBlob);
+            }
+          }
+
+          return insight;
+        } catch (error) {
+          lastErr = error;
+          if (attempt === 3) break;
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
       throw lastErr;
     }, []),
 

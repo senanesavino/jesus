@@ -10,43 +10,79 @@ import useStore from '../store/useStore';
 export default function EmotionsScreen() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggleFavorite, isFavorite, openShareModal, generateAIPrayer } = useStore();
+  const { toggleFavorite, isFavorite, openShareModal, generateEmotionInsight } = useStore();
   const [selected, setSelected] = useState(location.state?.selectedEmotion || null);
-  const [loadingAudio, setLoadingAudio] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleSelect = (emotion) => {
-    setSelected(emotion);
+  const handleSelect = async (emotion) => {
+    setIsGenerating(true);
+    try {
+      const insight = await generateEmotionInsight(emotion.name);
+      // Mesclar os dados base (cores/emojis) com o conteúdo novo da IA
+      setSelected({
+        ...emotion,
+        ...insight
+      });
+    } catch (err) {
+      console.error('Failed to generate insight:', err);
+      setSelected(emotion); // Fallback para o estático se a IA falhar
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleBack = () => {
     setSelected(null);
-    setLoadingAudio(false);
   };
 
-  const handlePlayAudio = async () => {
-    if (!selected || loadingAudio) return;
-    if (selected.audio_url) return;
-
-    setLoadingAudio(true);
-    try {
-      const generated = await generateAIPrayer(
-        selected.name, 
-        false, 
-        `emotion-${selected.id}`, 
-        selected.prayer
-      );
+  const LoadingOverlay = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'var(--bg-primary)', zIndex: 1000,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '32px', textAlign: 'center'
+      }}
+    >
+      <div style={{ position: 'relative', marginBottom: '32px' }}>
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '180px', height: '180px', borderRadius: '50%',
+            background: 'var(--accent-blue-bg)', filter: 'blur(30px)',
+          }}
+        />
+        <img src="/logo.png" alt="Logo" style={{ width: '120px', height: 'auto', position: 'relative' }} />
+      </div>
       
-      if (generated && generated.audio_url) {
-        setSelected(prev => ({ ...prev, audio_url: generated.audio_url }));
-      }
-    } catch (err) {
-      console.error('Failed to generate emotion audio:', err);
-    } finally {
-      setLoadingAudio(false);
-    }
-  };
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{
+          fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--text-primary)',
+          marginBottom: '12px', fontWeight: 500
+        }}
+      >
+        Preparando uma palavra para você...
+      </motion.p>
+      
+      <motion.p
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+        style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}
+      >
+        Sintonizando com o céu. Um instante...
+      </motion.p>
+    </motion.div>
+  );
 
-  if (selected) {
+  if (selected && !isGenerating) {
     const fav = isFavorite('messages', selected.id);
 
     return (
@@ -75,7 +111,14 @@ export default function EmotionsScreen() {
             }}>
               {selected.emoji}
             </div>
-            <h1 className="text-h1" style={{ marginBottom: '8px' }}>{selected.title}</h1>
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-h1" 
+              style={{ marginBottom: '8px' }}
+            >
+              {selected.title}
+            </motion.h1>
             <span className="badge" style={{ background: selected.bgColor, color: selected.color }}>
               {selected.name}
             </span>
@@ -149,41 +192,21 @@ export default function EmotionsScreen() {
             transition={{ delay: 0.5 }}
             style={{ marginBottom: '16px' }}
           >
-            {loadingAudio ? (
-              <div className="card flex items-center justify-center gap-md" style={{ padding: '24px' }}>
-                <div className="spinner" style={{ width: 24, height: 24, border: `2px solid ${selected.bgColor}`, borderTopColor: selected.color }} />
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Preparando oração...</span>
-              </div>
-            ) : (
-              <AudioPlayer
-                prayer={{
-                  id: `emotion-${selected.id}`,
-                  title: `Oração: ${selected.name}`,
-                  category: selected.name,
-                  duration: selected.audioDuration,
-                  durationSeconds: 120,
-                  emoji: selected.emoji,
-                  bgGradient: `linear-gradient(135deg, ${selected.color} 0%, ${selected.color}88 100%)`,
-                  audio_url: selected.audio_url,
-                  prayer: selected.prayer
-                }}
-                compact
-              />
-            )}
+            <AudioPlayer
+              prayer={{
+                id: `emotion-${selected.id}-${Date.now()}`,
+                title: selected.title,
+                category: selected.name,
+                duration: '2:00',
+                durationSeconds: 120,
+                emoji: selected.emoji,
+                bgGradient: `linear-gradient(135deg, ${selected.color} 0%, ${selected.color}88 100%)`,
+                audio_url: selected.audio_url,
+                prayer: selected.prayer
+              }}
+              compact
+            />
           </motion.div>
-
-          {!selected.audio_url && !loadingAudio && (
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="btn btn-primary btn-block"
-              style={{ marginBottom: '16px', background: selected.color }}
-              onClick={handlePlayAudio}
-            >
-              <Play size={18} />
-              Ouvir esta oração
-            </motion.button>
-          )}
 
           {/* Actions */}
           <motion.div
@@ -216,6 +239,10 @@ export default function EmotionsScreen() {
 
   return (
     <div className="screen" style={{ paddingTop: '56px' }}>
+      <AnimatePresence>
+        {isGenerating && <LoadingOverlay />}
+      </AnimatePresence>
+
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -232,7 +259,7 @@ export default function EmotionsScreen() {
           <EmotionCard
             key={emotion.id}
             emotion={emotion}
-            onClick={handleSelect}
+            onClick={() => handleSelect(emotion)}
             index={index}
           />
         ))}
