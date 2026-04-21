@@ -61,15 +61,17 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
 
       {/* Logo Transparente */}
       {logoBase64 && (
-        <img 
-          src={logoBase64} 
-          alt="Logo" 
+        <div 
           style={{ 
             width: '240px', 
             height: '240px', 
             marginBottom: '80px',
             zIndex: 1,
-            filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.05))'
+            filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.05))',
+            backgroundImage: `url(${logoBase64})`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
           }} 
         />
       )}
