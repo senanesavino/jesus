@@ -44,34 +44,7 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
         zIndex: 0
       }} />
 
-      {/* Logo Tipográfica Segura (100% suportada) */}
-      <div style={{
-        marginBottom: '100px',
-        zIndex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '16px'
-      }}>
-        <div style={{
-          fontSize: '72px',
-          fontFamily: "'Playfair Display', serif",
-          color: '#5F734E',
-          lineHeight: '1',
-          fontWeight: '700',
-          letterSpacing: '-0.02em',
-          filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.05))'
-        }}>
-          ComDeusHoje
-        </div>
-        <div style={{
-          width: '60px',
-          height: '3px',
-          background: '#F08B00', /* accent-gold */
-          borderRadius: '4px',
-          opacity: 0.8
-        }} />
-      </div>
+
 
       {/* Título */}
       <div style={{
