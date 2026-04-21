@@ -49,7 +49,7 @@ export default function AuthScreen() {
   return (
     <div style={{
       minHeight: '100dvh',
-      background: 'linear-gradient(145deg, #FAF8F5 0%, #F3EDE7 50%, #EDE4D8 100%)',
+      background: 'var(--bg-primary)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -67,51 +67,32 @@ export default function AuthScreen() {
           transition={{ duration: 0.8 }}
           style={{ textAlign: 'center', marginBottom: '40px' }}
         >
-          <div style={{
-            width: 72,
-            height: 72,
-            borderRadius: '50%',
-            margin: '0 auto 20px',
-            background: 'linear-gradient(135deg, #7B8F6A 0%, #6A7D5A 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 20px rgba(123, 143, 106, 0.3)',
-            fontSize: '1.75rem',
-          }}>
-            ✝️
-          </div>
-          <h1 style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: '2rem',
-            fontWeight: 600,
-            color: '#2C2825',
-            marginBottom: '8px',
-          }}>
-            Perto de Jesus
-          </h1>
+          <img 
+            src="/logo.png" 
+            alt="Com Deus Hoje Logo" 
+            style={{ width: '220px', height: 'auto', margin: '0 auto -36px', display: 'block' }} 
+          />
           <p style={{
-            color: '#6B635A',
+            color: 'var(--text-secondary)',
             fontSize: '0.9375rem',
             lineHeight: 1.5,
           }}>
-            Seu momento diário com Jesus começa aqui.
+            Sua palavra diária em comunhão.
           </p>
         </motion.div>
 
         {/* Tabs */}
         {mode !== 'forgot' && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             style={{
               display: 'flex',
-              gap: '4px',
+              background: 'var(--bg-secondary)',
               padding: '4px',
-              background: '#F3EDE7',
               borderRadius: '9999px',
-              marginBottom: '24px',
+              marginBottom: '32px',
             }}
           >
             <button
@@ -127,9 +108,9 @@ export default function AuthScreen() {
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'all 250ms ease',
-                background: mode === 'login' ? '#FFFFFF' : 'transparent',
-                color: mode === 'login' ? '#2C2825' : '#9E958B',
-                boxShadow: mode === 'login' ? '0 1px 3px rgba(44,40,37,0.04)' : 'none',
+                background: mode === 'login' ? 'var(--bg-card)' : 'transparent',
+                color: mode === 'login' ? 'var(--text-primary)' : 'var(--text-muted)',
+                boxShadow: mode === 'login' ? 'var(--shadow-sm)' : 'none',
                 fontFamily: "'Inter', sans-serif",
               }}
             >
@@ -148,9 +129,9 @@ export default function AuthScreen() {
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'all 250ms ease',
-                background: mode === 'signup' ? '#FFFFFF' : 'transparent',
-                color: mode === 'signup' ? '#2C2825' : '#9E958B',
-                boxShadow: mode === 'signup' ? '0 1px 3px rgba(44,40,37,0.04)' : 'none',
+                background: mode === 'signup' ? 'var(--bg-card)' : 'transparent',
+                color: mode === 'signup' ? 'var(--text-primary)' : 'var(--text-muted)',
+                boxShadow: mode === 'signup' ? 'var(--shadow-sm)' : 'none',
                 fontFamily: "'Inter', sans-serif",
               }}
             >
@@ -220,22 +201,22 @@ export default function AuthScreen() {
                     style={{
                       width: '100%',
                       padding: '16px 20px 16px 44px',
-                      background: '#F3EDE7',
+                      background: 'var(--bg-secondary)',
                       border: '1.5px solid transparent',
                       borderRadius: '12px',
                       fontSize: '0.9375rem',
-                      color: '#2C2825',
+                      color: 'var(--text-primary)',
                       outline: 'none',
                       fontFamily: "'Inter', sans-serif",
                       transition: 'all 250ms ease',
                     }}
                     onFocus={(e) => {
-                      e.target.style.background = '#FFFFFF';
-                      e.target.style.borderColor = '#7B8F6A';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(123,143,106,0.1)';
+                      e.target.style.background = 'var(--bg-card)';
+                      e.target.style.borderColor = 'var(--accent-blue)';
+                      e.target.style.boxShadow = '0 0 0 3px var(--accent-blue-bg)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.background = '#F3EDE7';
+                      e.target.style.background = 'var(--bg-secondary)';
                       e.target.style.borderColor = 'transparent';
                       e.target.style.boxShadow = 'none';
                     }}
@@ -266,22 +247,22 @@ export default function AuthScreen() {
                   style={{
                     width: '100%',
                     padding: '16px 20px 16px 44px',
-                    background: '#F3EDE7',
+                    background: 'var(--bg-secondary)',
                     border: '1.5px solid transparent',
                     borderRadius: '12px',
                     fontSize: '0.9375rem',
-                    color: '#2C2825',
+                    color: 'var(--text-primary)',
                     outline: 'none',
                     fontFamily: "'Inter', sans-serif",
                     transition: 'all 250ms ease',
                   }}
                   onFocus={(e) => {
-                    e.target.style.background = '#FFFFFF';
-                    e.target.style.borderColor = '#7B8F6A';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(123,143,106,0.1)';
+                    e.target.style.background = 'var(--bg-card)';
+                    e.target.style.borderColor = 'var(--accent-blue)';
+                    e.target.style.boxShadow = '0 0 0 3px var(--accent-blue-bg)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.background = '#F3EDE7';
+                    e.target.style.background = 'var(--bg-secondary)';
                     e.target.style.borderColor = 'transparent';
                     e.target.style.boxShadow = 'none';
                   }}
@@ -312,22 +293,22 @@ export default function AuthScreen() {
                     style={{
                       width: '100%',
                       padding: '16px 44px 16px 44px',
-                      background: '#F3EDE7',
+                      background: 'var(--bg-secondary)',
                       border: '1.5px solid transparent',
                       borderRadius: '12px',
                       fontSize: '0.9375rem',
-                      color: '#2C2825',
+                      color: 'var(--text-primary)',
                       outline: 'none',
                       fontFamily: "'Inter', sans-serif",
                       transition: 'all 250ms ease',
                     }}
                     onFocus={(e) => {
-                      e.target.style.background = '#FFFFFF';
-                      e.target.style.borderColor = '#7B8F6A';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(123,143,106,0.1)';
+                      e.target.style.background = 'var(--bg-card)';
+                      e.target.style.borderColor = 'var(--accent-blue)';
+                      e.target.style.boxShadow = '0 0 0 3px var(--accent-blue-bg)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.background = '#F3EDE7';
+                      e.target.style.background = 'var(--bg-secondary)';
                       e.target.style.borderColor = 'transparent';
                       e.target.style.boxShadow = 'none';
                     }}
@@ -353,7 +334,7 @@ export default function AuthScreen() {
                   onClick={() => setMode('forgot')}
                   style={{
                     fontSize: '0.8125rem',
-                    color: '#7B8F6A',
+                    color: 'var(--accent-blue)',
                     padding: '4px 0',
                     background: 'none',
                     border: 'none',
@@ -381,9 +362,9 @@ export default function AuthScreen() {
                 fontSize: '0.9375rem',
                 border: 'none',
                 cursor: loading ? 'default' : 'pointer',
-                background: 'linear-gradient(135deg, #7B8F6A 0%, #6A7D5A 100%)',
+                background: 'var(--gradient-gold)',
                 color: 'white',
-                boxShadow: '0 4px 20px rgba(123, 143, 106, 0.25)',
+                boxShadow: 'var(--shadow-glow-gold)',
                 marginTop: '8px',
                 opacity: loading ? 0.7 : 1,
                 transition: 'all 250ms ease',
@@ -463,10 +444,10 @@ export default function AuthScreen() {
                 borderRadius: '9999px',
                 fontWeight: 600,
                 fontSize: '0.9375rem',
-                background: '#FFFFFF',
-                color: '#2C2825',
-                border: '1.5px solid rgba(44,40,37,0.08)',
-                boxShadow: '0 1px 3px rgba(44,40,37,0.04)',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '1.5px solid rgba(10,42,94,0.08)',
+                boxShadow: 'var(--shadow-sm)',
                 cursor: 'pointer',
                 transition: 'all 250ms ease',
                 fontFamily: "'Inter', sans-serif",

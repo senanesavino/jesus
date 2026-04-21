@@ -1,8 +1,13 @@
-import { X, MessageCircle, Camera, Copy, ExternalLink } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { X, MessageCircle, Camera, Copy, ExternalLink, Loader2 } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import useStore from '../store/useStore';
+import StoryCard from './StoryCard';
 
 export default function ShareModal() {
   const { shareModalOpen, shareContent, closeShareModal } = useStore();
+  const storyRef = useRef(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   if (!shareModalOpen || !shareContent) return null;
 
@@ -15,9 +20,53 @@ export default function ShareModal() {
     closeShareModal();
   };
 
+  const handleStoryShare = async () => {
+    if (!storyRef.current) return;
+    setIsGenerating(true);
+    
+    // Atraso maior para garantir que o hardware do celular renderize tudo
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    try {
+      const dataUrl = await toPng(storyRef.current, {
+        quality: 1, // Qualidade máxima
+        pixelRatio: 2, 
+        skipFonts: false, // Força o carregamento das fontes Premium
+        cacheBust: true,
+      });
+      
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], 'story-perto-de-jesus.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Compartilhar Palavra',
+          text: 'Perto de Jesus 🕊️'
+        });
+      } else {
+        // Fallback: Download
+        const link = document.createElement('a');
+        link.download = 'story-perto-de-jesus.png';
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (err) {
+      console.error('Erro ao gerar Story:', err);
+    } finally {
+      setIsGenerating(false);
+      closeShareModal();
+    }
+  };
+
   const shareOptions = [
     { icon: MessageCircle, label: 'WhatsApp', color: '#25D366', action: () => { window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`); closeShareModal(); } },
-    { icon: Camera, label: 'Stories', color: '#E4405F', action: closeShareModal },
+    { 
+      icon: isGenerating ? Loader2 : Camera, 
+      label: isGenerating ? 'Gerando...' : 'Stories', 
+      color: '#E4405F', 
+      action: handleStoryShare 
+    },
     { icon: Copy, label: 'Copiar texto', color: 'var(--text-secondary)', action: handleCopy },
     { icon: ExternalLink, label: 'Mais opções', color: 'var(--accent-blue)', action: () => { navigator.share?.({ text: shareText }).catch(() => {}); closeShareModal(); } },
   ];
@@ -76,6 +125,14 @@ export default function ShareModal() {
             </button>
           ))}
         </div>
+        
+        {/* Story Generator Hidden Instance */}
+        <StoryCard ref={storyRef} content={shareContent} />
+
+        <style>{`
+          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          .animate-spin { animation: spin 1s linear infinite; }
+        `}</style>
       </div>
     </div>
   );

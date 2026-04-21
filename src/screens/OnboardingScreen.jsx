@@ -85,7 +85,7 @@ export default function OnboardingScreen() {
   return (
     <div style={{
       minHeight: '100dvh',
-      background: 'linear-gradient(145deg, #FAF8F5 0%, #F3EDE7 50%, #EDE4D8 100%)',
+      background: 'var(--bg-primary)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -93,14 +93,16 @@ export default function OnboardingScreen() {
       <div style={{
         width: '100%',
         maxWidth: '400px',
-        padding: '40px 24px',
+        padding: '24px',
         margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100dvh',
       }}>
-        {/* Spacer */}
-        <div style={{ height: '40px' }} />
+        {/* Logo area */}
+        <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}>
+          <img src="/logo.png" alt="Logo" style={{ height: '50px', width: 'auto' }} />
+        </div>
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -117,7 +119,7 @@ export default function OnboardingScreen() {
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              color: '#7B8F6A',
+              color: 'var(--accent-blue)',
               marginBottom: '12px',
               fontFamily: "'Inter', sans-serif",
             }}>
@@ -130,14 +132,14 @@ export default function OnboardingScreen() {
               fontWeight: 600,
               lineHeight: 1.25,
               marginBottom: '8px',
-              color: '#2C2825',
+              color: 'var(--text-primary)',
             }}>
               {step.title}
             </h1>
             <p style={{
               fontSize: '1rem',
               lineHeight: 1.7,
-              color: '#6B635A',
+              color: 'var(--text-secondary)',
               marginBottom: '32px',
             }}>
               {step.subtitle}

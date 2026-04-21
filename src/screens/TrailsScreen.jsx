@@ -6,14 +6,20 @@ import useStore from '../store/useStore';
 
 export default function TrailsScreen() {
   const navigate = useNavigate();
-  const { isPremium } = useStore();
+  const { isPremium, userTrails } = useStore();
 
-  const activeTrails = trails.filter((t) => t.progress > 0);
-  const freeTrails = trails.filter((t) => !t.isPremium && t.progress === 0);
-  const premiumTrails = trails.filter((t) => t.isPremium);
+  // Merge static trail data with user progress
+  const trailsWithProgress = trails.map(t => ({
+    ...t,
+    progress: userTrails[t.id] || 0
+  }));
+
+  const activeTrails = trailsWithProgress.filter((t) => t.progress > 0);
+  const freeTrails = trailsWithProgress.filter((t) => !t.isPremium && t.progress === 0);
+  const premiumTrails = trailsWithProgress.filter((t) => t.isPremium);
 
   const handleTrailClick = (trail) => {
-    // In a real app, navigate to trail detail
+    navigate(`/trail/${trail.id}`);
   };
 
   return (

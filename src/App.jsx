@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import useStore, { StoreProvider } from './store/useStore';
@@ -14,10 +14,12 @@ import ProfileScreen from './screens/ProfileScreen';
 import DevotionalScreen from './screens/DevotionalScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
 import PremiumScreen from './screens/PremiumScreen';
+import CustomPrayerScreen from './screens/CustomPrayerScreen';
+import TrailDetailScreen from './screens/TrailDetailScreen';
 
 function AnimatedRoutes() {
   const location = useLocation();
-  const showNav = !['/devotional', '/premium', '/favorites'].includes(location.pathname);
+  const showNav = !['/devotional', '/premium', '/favorites', '/trail'].some(p => location.pathname.startsWith(p));
 
   return (
     <>
@@ -35,10 +37,12 @@ function AnimatedRoutes() {
             <Route path="/emotions" element={<EmotionsScreen />} />
             <Route path="/prayers" element={<PrayerScreen />} />
             <Route path="/trails" element={<TrailsScreen />} />
+            <Route path="/trail/:id" element={<TrailDetailScreen />} />
             <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/devotional" element={<DevotionalScreen />} />
             <Route path="/favorites" element={<FavoritesScreen />} />
             <Route path="/premium" element={<PremiumScreen />} />
+            <Route path="/custom-prayer" element={<CustomPrayerScreen />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </motion.div>
@@ -92,12 +96,39 @@ function AppContent() {
   );
 }
 
+// Componente de segurança para capturar erros e evitar tela branca
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center', background: '#fff', minHeight: '100vh', color: '#ff4d4f' }}>
+          <h2>Ops! Algo deu errado.</h2>
+          <pre style={{ textAlign: 'left', background: '#f5f5f5', padding: '20px', overflow: 'auto' }}>
+            {this.state.error?.toString()}
+          </pre>
+          <button onClick={() => window.location.reload()} className="btn-primary" style={{ marginTop: '20px' }}>
+            Tentar Recarregar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
-    <StoreProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </StoreProvider>
+    <ErrorBoundary>
+      <StoreProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </StoreProvider>
+    </ErrorBoundary>
   );
 }

@@ -40,24 +40,50 @@ export default function HomeScreen() {
   const activeTrails = trails.filter((t) => t.progress > 0).slice(0, 2);
 
   return (
-    <div className={`screen ${isNight ? 'screen-night' : ''}`} style={{ paddingTop: '56px' }}>
-      {/* Header */}
+    <div className={`screen ${isNight ? 'screen-night' : ''} header-gradient`} style={{ paddingTop: '24px' }}>
+      {/* Premium Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex justify-between items-center"
-        style={{ marginBottom: '28px' }}
+        transition={{ duration: 0.6 }}
+        style={{ 
+          marginBottom: '32px',
+          paddingBottom: '20px',
+          borderBottom: '1px solid rgba(10, 42, 94, 0.05)'
+        }}
       >
-        <div>
-          <div className="text-caption" style={{ marginBottom: '4px', color: isNight ? 'var(--night-text-secondary)' : 'var(--text-muted)' }}>
-            {greeting}, {firstName}
+        <div style={{ flex: 1 }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '4px'
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ 
+                color: isNight ? 'var(--night-text-secondary)' : 'var(--text-muted)', 
+                fontSize: '0.75rem', 
+                fontWeight: 500,
+                fontFamily: 'var(--font-sans)',
+                marginBottom: '2px',
+                letterSpacing: '0.02em'
+              }}>
+                {greeting}, {user?.name || 'Amado(a)'}
+              </div>
+              <h1 style={{ 
+                fontFamily: 'var(--font-serif)',
+                color: isNight ? 'var(--night-text)' : 'var(--text-primary)', 
+                fontSize: '1.35rem', 
+                lineHeight: '1.2',
+                fontWeight: 600,
+                maxWidth: '240px'
+              }}>
+                Deus tem uma palavra para você. ✨
+              </h1>
+            </div>
+            <StreakBadge size="compact" />
           </div>
-          <h1 className="text-h2" style={{ color: isNight ? 'var(--night-text)' : 'var(--text-primary)' }}>
-            {isNight ? 'Descanse no Senhor.' : 'Deus tem uma palavra para você.'}
-          </h1>
         </div>
-        <StreakBadge size="compact" />
       </motion.div>
 
       {/* Main devotional */}
@@ -79,7 +105,7 @@ export default function HomeScreen() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        style={{ marginBottom: '28px' }}
+        style={{ marginBottom: '16px' }}
       >
         <button
           className="btn btn-primary btn-block"
@@ -91,15 +117,9 @@ export default function HomeScreen() {
         </button>
       </motion.div>
 
-      {/* Verse of the day */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        style={{ marginBottom: '28px' }}
-      >
-        <VerseCard verse={verseOfTheDay.text} reference={verseOfTheDay.reference} />
-      </motion.div>
+
+
+
 
       {/* How are you feeling */}
       <motion.div
@@ -121,21 +141,33 @@ export default function HomeScreen() {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+        <div className="emotions-carousel hide-scrollbar" style={{ 
+          display: 'flex', 
+          gap: '12px', 
+          overflowX: 'auto', 
+          paddingBottom: '8px',
+          margin: '0 -24px',
+          padding: '4px 24px 12px 24px',
+          scrollSnapType: 'x mandatory'
+        }}>
           {quickEmotions.map((emotion) => (
             <div
               key={emotion.id}
               onClick={() => navigate('/emotions', { state: { selectedEmotion: emotion } })}
               style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                padding: '14px 8px', background: isNight ? 'var(--night-card)' : 'var(--bg-card)',
-                borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                padding: '16px 20px', background: isNight ? 'var(--night-card)' : 'var(--bg-card)',
+                borderRadius: 'var(--radius-lg)', cursor: 'pointer',
                 border: `1px solid ${isNight ? 'rgba(139,157,195,0.08)' : 'rgba(44,40,37,0.04)'}`,
                 transition: 'all var(--transition-base)',
+                flex: '0 0 auto',
+                minWidth: '100px',
+                scrollSnapAlign: 'start'
               }}
+              className="emotion-card"
             >
-              <span style={{ fontSize: '1.25rem' }}>{emotion.emoji}</span>
-              <span style={{ fontSize: '0.6875rem', color: isNight ? 'var(--night-text-secondary)' : 'var(--text-secondary)', fontWeight: 500 }}>
+              <span style={{ fontSize: '1.75rem', marginBottom: '2px' }}>{emotion.emoji}</span>
+              <span style={{ fontSize: '0.75rem', color: isNight ? 'var(--night-text-secondary)' : 'var(--text-secondary)', fontWeight: 600 }}>
                 {emotion.name}
               </span>
             </div>

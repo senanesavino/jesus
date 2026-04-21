@@ -53,7 +53,7 @@ export const trails = [
   },
   {
     id: 5,
-    title: '21 Dias Mais Perto de Jesus',
+    title: '21 Dias Com Deus Hoje',
     description: 'Uma jornada profunda de 21 dias para fortalecer sua intimidade com Jesus.',
     emoji: '✝️',
     days: 21,

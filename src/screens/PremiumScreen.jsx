@@ -52,18 +52,19 @@ export default function PremiumScreen() {
         }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px',
-            background: 'rgba(255,255,255,0.2)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Crown size={28} />
-          </div>
+            <img src="/logo.png" alt="Com Deus Hoje" style={{ height: '40px', width: 'auto', marginBottom: '16px' }} />
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px',
+              background: 'rgba(255,255,255,0.2)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Crown size={24} />
+            </div>
           <h1 style={{
             fontFamily: 'var(--font-serif)', fontSize: '1.75rem',
             fontWeight: 600, marginBottom: '8px',
           }}>
-            Perto de Jesus
+            Com Deus Hoje
           </h1>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -229,7 +230,7 @@ export default function PremiumScreen() {
           fontSize: '0.9375rem', color: 'var(--text-secondary)', lineHeight: 1.7,
           marginBottom: '12px',
         }}>
-          "O Perto de Jesus transformou minhas manhãs. Agora começo cada dia com paz e uma palavra de Deus no coração."
+          "O Com Deus Hoje transformou minhas manhãs. Agora começo cada dia com paz e uma palavra de Deus no coração."
         </p>
         <div className="text-caption">— Maria, São Paulo</div>
       </motion.div>

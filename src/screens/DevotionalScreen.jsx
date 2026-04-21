@@ -146,8 +146,10 @@ export default function DevotionalScreen() {
             id: `devotional-${devotional.period}`,
             title: `Oração: ${devotional.title}`,
             category: devotional.period === 'noite' ? 'Noite' : 'Manhã',
-            duration: devotional.audioDuration,
-            durationSeconds: parseInt(devotional.audioDuration.split(':')[0]) * 60 + parseInt(devotional.audioDuration.split(':')[1]),
+            duration: devotional.audioDuration || '2:00',
+            durationSeconds: devotional.audioDuration 
+              ? (parseInt(devotional.audioDuration.split(':')[0]) * 60 + parseInt(devotional.audioDuration.split(':')[1]))
+              : 120,
             emoji: isNight ? '🌙' : '☀️',
             bgGradient: isNight
               ? 'linear-gradient(135deg, #1A1926 0%, #2A2942 50%, #3A3960 100%)'

@@ -18,7 +18,10 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <div className="screen" style={{ paddingTop: '56px' }}>
+    <div className="screen" style={{ paddingTop: '20px' }}>
+      <center style={{ marginBottom: '24px' }}>
+        <img src="/logo.png" alt="Com Deus Hoje" style={{ height: '32px', width: 'auto' }} />
+      </center>
       {/* Profile header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -34,8 +37,8 @@ export default function ProfileScreen() {
         }}>
           {user?.name?.[0]?.toUpperCase() || '✝'}
         </div>
-        <h1 className="text-h2" style={{ marginBottom: '4px' }}>{user?.name || 'Amado(a)'}</h1>
-        <p className="text-body-sm">{user?.email || 'usuario@email.com'}</p>
+        <h1 className="text-h2" style={{ marginBottom: '4px', color: 'var(--text-primary)' }}>{user?.name || 'Amado(a)'}</h1>
+        <p className="text-body-sm" style={{ color: 'var(--text-secondary)' }}>{user?.email || 'usuario@email.com'}</p>
         {isPremium && (
           <span className="badge badge-gold" style={{ marginTop: '8px' }}>
             <Crown size={10} /> Premium
@@ -107,7 +110,7 @@ export default function ProfileScreen() {
 
       {/* App version */}
       <div style={{ textAlign: 'center', marginTop: '24px' }}>
-        <p className="text-caption">Perto de Jesus • Versão 1.0</p>
+        <p className="text-caption">Com Deus Hoje • Versão 1.0</p>
         <p className="text-caption" style={{ marginTop: '4px' }}>Feito com ❤️ e fé</p>
       </div>
     </div>

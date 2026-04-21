@@ -12,27 +12,17 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: 'Perto de Jesus',
-        short_name: 'JesusApp',
-        description: 'Seu momento diário com Jesus começa aqui.',
-        theme_color: '#FAF8F5',
-        background_color: '#FAF8F5',
+        short_name: 'PertoJesus',
+        description: 'Seu momento diário com Jesus em poucos minutos.',
+        theme_color: '#0A2A5E',
+        background_color: '#FDFDFD',
         display: 'standalone',
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
+            src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
           }
         ]
       }
