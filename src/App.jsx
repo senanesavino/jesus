@@ -20,7 +20,7 @@ import JourneyScreen from './screens/JourneyScreen';
 
 function AnimatedRoutes() {
   const location = useLocation();
-  const showNav = !['/devotional', '/premium', '/favorites', '/trail'].some(p => location.pathname.startsWith(p));
+  const showNav = !['/devotional', '/premium', '/favorites', '/trail/'].some(p => location.pathname.startsWith(p));
 
   return (
     <>
