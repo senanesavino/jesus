@@ -131,12 +131,13 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
         bottom: '80px',
         fontSize: '28px',
         color: '#7B8F6A',
-        opacity: 0.6,
-        letterSpacing: '0.1em',
+        opacity: 0.8,
+        letterSpacing: '0.05em',
         zIndex: 1,
-        fontFamily: "'Inter', sans-serif"
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: '500'
       }}>
-        COM DEUS HOJE
+        ComDeusHoje ✝️
       </div>
     </div>
   );

@@ -24,8 +24,18 @@ export default function ShareModal() {
     if (!storyRef.current) return;
     setIsGenerating(true);
     
+    // Força as imagens a carregarem completamente na DOM fantasma
+    const images = Array.from(storyRef.current.getElementsByTagName('img'));
+    await Promise.all(images.map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve; // ignora erro e segue pra não travar
+      });
+    }));
+
     // Atraso maior para garantir que o hardware do celular renderize tudo
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
       const dataUrl = await toPng(storyRef.current, {
