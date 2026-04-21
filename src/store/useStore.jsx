@@ -445,31 +445,44 @@ export function StoreProvider({ children }) {
           resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
           const insight = JSON.parse(resultText);
 
+          // ID Estável para esta geração
+          insight.id = `emotion-ai-${Date.now()}`;
+
           // GERA O ÁUDIO AUTOMATICAMENTE PARA A ORAÇÃO
           setState(s => ({ ...s, debugInfo: 'Sintonizando áudio...' }));
           
-          const ttsResponse = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              input: { text: insight.prayer },
-              voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
-              audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
-            })
-          });
+          try {
+            const ttsResponse = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                input: { text: insight.prayer },
+                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
+                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
+              })
+            });
 
-          if (ttsResponse.ok) {
-            const { audioContent } = await ttsResponse.json();
-            if (audioContent) {
-              const sanitizedBase64 = audioContent.trim().replace(/\s/g, '');
-              const byteCharacters = atob(sanitizedBase64);
-              const byteArray = new Uint8Array(byteCharacters.length);
-              for (let i = 0; i < byteCharacters.length; i++) {
-                byteArray[i] = byteCharacters.charCodeAt(i);
+            if (ttsResponse.ok) {
+              const { audioContent } = await ttsResponse.json();
+              if (audioContent) {
+                const sanitizedBase64 = audioContent.trim().replace(/\s/g, '');
+                const byteCharacters = atob(sanitizedBase64);
+                const byteArray = new Uint8Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                  byteArray[i] = byteCharacters.charCodeAt(i);
+                }
+                const audioBlob = new Blob([byteArray], { type: 'audio/mpeg' });
+                insight.audio_url = URL.createObjectURL(audioBlob);
+              } else {
+                insight.audio_url = 'native';
               }
-              const audioBlob = new Blob([byteArray], { type: 'audio/mpeg' });
-              insight.audio_url = URL.createObjectURL(audioBlob);
+            } else {
+              console.warn('TTS Response not ok, falling back to native');
+              insight.audio_url = 'native';
             }
+          } catch (ttsErr) {
+            console.error('TTS Generation failed, using native fallback:', ttsErr);
+            insight.audio_url = 'native';
           }
 
           return insight;

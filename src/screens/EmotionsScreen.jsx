@@ -194,7 +194,7 @@ export default function EmotionsScreen() {
           >
             <AudioPlayer
               prayer={{
-                id: `emotion-${selected.id}-${Date.now()}`,
+                id: selected.id || `emotion-${selected.id}-${Date.now()}`,
                 title: selected.title,
                 category: selected.name,
                 duration: '2:00',
