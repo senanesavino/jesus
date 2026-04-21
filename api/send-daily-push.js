@@ -193,7 +193,7 @@ export default async function handler(request, response) {
         
         const fallbackPayload = {
           app_id: APP_ID,
-          included_segments: ['Subscribed Users'],
+          included_segments: ['Total Subscriptions', 'Subscribed Users', 'Active Users'],
           headings: { en: tituloPush, pt: tituloPush },
           contents: { en: conteudoPush, pt: conteudoPush },
           url: 'https://jesus-sigma.vercel.app',
