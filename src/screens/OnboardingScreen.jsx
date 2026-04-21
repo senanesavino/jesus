@@ -101,8 +101,8 @@ export default function OnboardingScreen() {
         minHeight: '100dvh',
       }}>
         {/* Logo area */}
-        <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}>
-          <img src="/logo.png" alt="Logo" style={{ height: '50px', width: 'auto' }} />
+        <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '40px' }}>
+          <img src="/logo.png" alt="Logo" style={{ height: '100px', width: 'auto' }} />
         </div>
 
         <AnimatePresence mode="wait">

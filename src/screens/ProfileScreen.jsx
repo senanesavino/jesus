@@ -19,8 +19,8 @@ export default function ProfileScreen() {
 
   return (
     <div className="screen" style={{ paddingTop: '20px' }}>
-      <center style={{ marginBottom: '24px' }}>
-        <img src="/logo.png" alt="Com Deus Hoje" style={{ height: '32px', width: 'auto' }} />
+      <center style={{ marginBottom: '32px' }}>
+        <img src="/logo.png" alt="Com Deus Hoje" style={{ height: '80px', width: 'auto' }} />
       </center>
       {/* Profile header */}
       <motion.div
