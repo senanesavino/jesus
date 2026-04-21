@@ -74,12 +74,32 @@ function AppContent() {
         if (store.user?.id) {
           OneSignal.login(store.user.id);
         }
+
+        // Pedir permissão de notificação se ainda não concedida
+        if (OneSignal.Notifications) {
+          const permission = OneSignal.Notifications.permission;
+          if (!permission) {
+            // Aguarda um pouco para não ser intrusivo logo ao abrir
+            setTimeout(async () => {
+              try {
+                await OneSignal.Notifications.requestPermission();
+              } catch (e) {
+                console.log('Push permission denied or error:', e);
+              }
+            }, 3000);
+          }
+        }
+
+        // Salvar a tag do período do usuário (para segmentação das notificações)
+        if (store.preferences?.period && OneSignal.User) {
+          OneSignal.User.addTag('periodo', store.preferences.period);
+        }
       } catch (e) {
         console.log('OneSignal init error', e);
       }
     };
     initOneSignal();
-  }, [store.user?.id]);
+  }, [store.user?.id, store.preferences?.period]);
 
   if (!store.isAuthenticated) {
     return <AuthScreen />;
