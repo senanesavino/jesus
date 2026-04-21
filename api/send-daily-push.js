@@ -164,7 +164,7 @@ export default async function handler(request, response) {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
-        'Authorization': `Basic ${REST_API_KEY}`,
+        'Authorization': `Key ${REST_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(pushPayload)
