@@ -32,7 +32,7 @@ export default function ShareModal() {
         quality: 1, // Qualidade máxima
         pixelRatio: 2, 
         skipFonts: false, // Força o carregamento das fontes Premium
-        cacheBust: true,
+        useCORS: true, // Garante que a logo seja renderizada corretamente
       });
       
       const blob = await (await fetch(dataUrl)).blob();

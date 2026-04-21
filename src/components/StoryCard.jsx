@@ -47,6 +47,7 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
 
       {/* Logo Transparente */}
       <img 
+        crossOrigin="anonymous"
         src={logoBrand} 
         alt="Logo" 
         style={{ 
