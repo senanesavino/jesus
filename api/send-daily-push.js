@@ -221,6 +221,14 @@ export default async function handler(request, response) {
             destinatarios: fallbackJson.recipients || 0,
             disparo: fallbackJson
           });
+        } else {
+          // Retornar o erro do fallback para debug
+          return response.status(400).json({
+            operacao: `Erro no envio para TODOS (fallback failed)`,
+            errors_original: osJson.errors,
+            errors_fallback: fallbackJson.errors,
+            payload_enviado: fallbackPayload
+          });
         }
       }
 
