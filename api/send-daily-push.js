@@ -169,7 +169,7 @@ export default async function handler(request, response) {
 
     console.log('[PUSH] Enviando para OneSignal...', JSON.stringify(pushPayload, null, 2));
 
-    const osRes = await fetch('https://onesignal.com/api/v1/notifications', {
+    const osRes = await fetch('https://api.onesignal.com/notifications', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
