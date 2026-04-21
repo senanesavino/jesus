@@ -71,8 +71,14 @@ export default async function handler(request, response) {
 
     if (!message || fetchError) {
       if (!GEMINI_KEY) {
-        return response.status(500).json({ error: 'Sem chave Gemini para gerar mensagem' });
-      }
+        // Sem Gemini? Envia notificação genérica mesmo assim
+        console.log('[PUSH] Sem Gemini e sem mensagem do dia. Usando mensagem genérica.');
+        message = {
+          title: 'Deus está com você',
+          verse: 'Porque Eu sou o Senhor, o seu Deus, que o segura pela mão direita e lhe diz: Não tema, eu o ajudarei. — Isaías 41:13',
+          content: 'Não importa o que você esteja enfrentando hoje, Deus está caminhando ao seu lado.'
+        };
+      } else {
 
       console.log('[PUSH] Gerando mensagem do dia via Gemini...');
       
@@ -123,6 +129,7 @@ export default async function handler(request, response) {
       if (insertError) throw insertError;
       message = inserted;
       console.log('[PUSH] Mensagem gerada e salva:', message.title);
+      }
     }
 
     // 2. Montar título da notificação
