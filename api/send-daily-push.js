@@ -79,56 +79,65 @@ export default async function handler(request, response) {
           content: 'Não importa o que você esteja enfrentando hoje, Deus está caminhando ao seu lado.'
         };
       } else {
+        // Tenta gerar via Gemini, mas se falhar, usa mensagem genérica
+        try {
+          console.log('[PUSH] Gerando mensagem do dia via Gemini...');
+          
+          const prompt = `Você é um conselheiro cristão amoroso. Crie um devocional curto.
+          Foque em esperança, fé e direção para o dia.
+          Siga estritamente este formato JSON:
+          {
+            "title": "Um título encorajador de 4 palavras no máximo",
+            "verse": "O texto bíblico completo na versão NVI",
+            "reference": "Livro Capitulo:Versiculo",
+            "content": "A mensagem de 3 parágrafos curtos falando diretamente ao coração.",
+            "prayer": "Uma oração de 2 frases."
+          }`;
 
-      console.log('[PUSH] Gerando mensagem do dia via Gemini...');
-      
-      const prompt = `Você é um conselheiro cristão amoroso. Crie um devocional curto.
-      Foque em esperança, fé e direção para o dia.
-      Siga estritamente este formato JSON:
-      {
-        "title": "Um título encorajador de 4 palavras no máximo",
-        "verse": "O texto bíblico completo na versão NVI",
-        "reference": "Livro Capitulo:Versiculo",
-        "content": "A mensagem de 3 parágrafos curtos falando diretamente ao coração.",
-        "prayer": "Uma oração de 2 frases."
-      }`;
+          const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          });
 
-      const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' }
-        })
-      });
+          if (!aiResponse.ok) {
+            throw new Error(`Gemini ${aiResponse.status}`);
+          }
 
-      if (!aiResponse.ok) {
-        const errText = await aiResponse.text();
-        throw new Error(`Gemini API error: ${aiResponse.status} - ${errText}`);
-      }
+          const aiData = await aiResponse.json();
+          const resultText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!resultText) throw new Error('Gemini sem texto');
 
-      const aiData = await aiResponse.json();
-      const resultText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!resultText) throw new Error('Gemini não retornou texto válido');
+          const devocional = JSON.parse(resultText.replace(/```json/g, '').replace(/```/g, '').trim());
 
-      const devocional = JSON.parse(resultText.replace(/```json/g, '').replace(/```/g, '').trim());
+          const { data: inserted, error: insertError } = await supabase
+            .from('daily_messages')
+            .insert({
+              publish_date: todayBRT,
+              title: devocional.title,
+              verse: devocional.verse,
+              reference: devocional.reference,
+              content: devocional.content,
+              prayer: devocional.prayer
+            })
+            .select()
+            .single();
 
-      const { data: inserted, error: insertError } = await supabase
-        .from('daily_messages')
-        .insert({
-          publish_date: todayBRT,
-          title: devocional.title,
-          verse: devocional.verse,
-          reference: devocional.reference,
-          content: devocional.content,
-          prayer: devocional.prayer
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-      message = inserted;
-      console.log('[PUSH] Mensagem gerada e salva:', message.title);
+          if (insertError) throw insertError;
+          message = inserted;
+          console.log('[PUSH] Mensagem gerada e salva:', message.title);
+        } catch (geminiErr) {
+          // Gemini falhou — usa mensagem genérica para não travar o push
+          console.error('[PUSH] Gemini falhou, usando fallback:', geminiErr.message);
+          message = {
+            title: 'Deus está com você',
+            verse: 'Porque Eu sou o Senhor, o seu Deus, que o segura pela mão direita e lhe diz: Não tema, eu o ajudarei. — Isaías 41:13',
+            content: 'Não importa o que você esteja enfrentando hoje, Deus está caminhando ao seu lado.'
+          };
+        }
       }
     }
 
