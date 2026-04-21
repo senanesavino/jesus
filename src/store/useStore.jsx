@@ -581,7 +581,45 @@ export function StoreProvider({ children }) {
   }, [state.favorites]);
 
   if (isInitializing) {
-    return <div style={{ minHeight: '100dvh', background: '#FAF8F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 30, height: 30, border: '3px solid rgba(123,143,106,0.2)', borderTopColor: '#7B8F6A', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} /></div>;
+    return (
+      <div style={{ 
+        minHeight: '100dvh', 
+        background: '#0A2A5E', 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        gap: '24px'
+      }}>
+        <style>{`
+          @keyframes pulse-soft {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+          }
+          @keyframes spin-premium {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+        <img 
+          src="/logo.png" 
+          alt="Logo" 
+          style={{ 
+            height: '80px', 
+            width: 'auto',
+            animation: 'pulse-soft 2s infinite ease-in-out'
+          }} 
+        />
+        <div style={{ 
+          width: 24, 
+          height: 24, 
+          border: '2px solid rgba(255,255,255,0.1)', 
+          borderTopColor: '#FFFFFF', 
+          borderRadius: '50%', 
+          animation: 'spin-premium 0.8s linear infinite' 
+        }} />
+      </div>
+    );
   }
 
   // onCanPlay removido - play só acontece por ação do usuário
