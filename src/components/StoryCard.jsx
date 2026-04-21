@@ -135,7 +135,7 @@ const StoryCard = React.forwardRef(({ content }, ref) => {
         zIndex: 1,
         fontFamily: "'Inter', sans-serif"
       }}>
-        PERTO DE JESUS
+        COM DEUS HOJE
       </div>
     </div>
   );

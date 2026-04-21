@@ -12,8 +12,8 @@ export default function ShareModal() {
   if (!shareModalOpen || !shareContent) return null;
 
   const shareText = shareContent.type === 'verse'
-    ? `"${shareContent.text}"\n— ${shareContent.reference}\n\n📖 Perto de Jesus`
-    : `${shareContent.title}\n\n"${shareContent.verse}"\n— ${shareContent.verseRef}\n\n✝️ Perto de Jesus`;
+    ? `"${shareContent.text}"\n— ${shareContent.reference}\n\n📖 ComDeusHoje`
+    : `${shareContent.title}\n\n"${shareContent.verse}"\n— ${shareContent.verseRef}\n\n✝️ ComDeusHoje`;
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(shareText);
@@ -36,18 +36,18 @@ export default function ShareModal() {
       });
       
       const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], 'story-perto-de-jesus.png', { type: 'image/png' });
+      const file = new File([blob], 'story-com-deus-hoje.png', { type: 'image/png' });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: 'Compartilhar Palavra',
-          text: 'Perto de Jesus 🕊️'
+          text: 'ComDeusHoje 🕊️'
         });
       } else {
         // Fallback: Download
         const link = document.createElement('a');
-        link.download = 'story-perto-de-jesus.png';
+        link.download = 'story-com-deus-hoje.png';
         link.href = dataUrl;
         link.click();
       }
@@ -98,7 +98,7 @@ export default function ShareModal() {
             {shareContent.verseRef || shareContent.reference}
           </p>
           <div style={{ marginTop: '12px', fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-            Perto de Jesus ✝️
+            ComDeusHoje ✝️
           </div>
         </div>
 

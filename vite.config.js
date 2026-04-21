@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Perto de Jesus',
-        short_name: 'PertoJesus',
-        description: 'Seu momento diário com Jesus em poucos minutos.',
+        name: 'ComDeusHoje',
+        short_name: 'ComDeusHoje',
+        description: 'Seu momento diário com Deus em poucos minutos.',
         theme_color: '#0A2A5E',
         background_color: '#FDFDFD',
         display: 'standalone',
