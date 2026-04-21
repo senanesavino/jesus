@@ -16,6 +16,7 @@ import FavoritesScreen from './screens/FavoritesScreen';
 import PremiumScreen from './screens/PremiumScreen';
 import CustomPrayerScreen from './screens/CustomPrayerScreen';
 import TrailDetailScreen from './screens/TrailDetailScreen';
+import JourneyScreen from './screens/JourneyScreen';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -34,6 +35,7 @@ function AnimatedRoutes() {
         >
           <Routes location={location}>
             <Route path="/home" element={<HomeScreen />} />
+            <Route path="/journey" element={<JourneyScreen />} />
             <Route path="/emotions" element={<EmotionsScreen />} />
             <Route path="/prayers" element={<PrayerScreen />} />
             <Route path="/trails" element={<TrailsScreen />} />

@@ -1,10 +1,10 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Heart, BookOpen, Compass, User } from 'lucide-react';
+import { Home, Heart, BookOpen, Compass, Calendar, User } from 'lucide-react';
 
 const navItems = [
   { to: '/home', icon: Home, label: 'Início' },
+  { to: '/journey', icon: Calendar, label: 'Jornada' },
   { to: '/emotions', icon: Heart, label: 'Emoções' },
-  { to: '/prayers', icon: BookOpen, label: 'Orar' },
   { to: '/trails', icon: Compass, label: 'Trilhas' },
   { to: '/profile', icon: User, label: 'Perfil' },
 ];

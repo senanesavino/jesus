@@ -18,7 +18,7 @@ const initialState = {
   user: null,
   preferences: { period: null, need: null, format: null },
   favorites: { messages: [], verses: [], prayers: [] },
-  streak: { current: 0, best: 0, totalDays: 0, totalMinutes: 0, lastDate: getLocalDateString() },
+  streak: JSON.parse(localStorage.getItem('userStreak')) || { current: 0, best: 0, totalDays: 0, totalMinutes: 0, lastDate: '1970-01-01' },
   isPlaying: false,
   currentPrayer: null,
   audioProgress: 0,
@@ -152,15 +152,18 @@ export function StoreProvider({ children }) {
 
           const newBest = Math.max(s.streak.best, newCurrent);
           
+          const newStreak = {
+            ...s.streak,
+            current: newCurrent,
+            best: newBest,
+            totalDays: s.streak.totalDays + 1,
+            lastDate: today
+          };
+          localStorage.setItem('userStreak', JSON.stringify(newStreak));
+          
           return {
             ...s,
-            streak: {
-              ...s.streak,
-              current: newCurrent,
-              best: newBest,
-              totalDays: s.streak.totalDays + 1,
-              lastDate: today
-            }
+            streak: newStreak
           };
         });
 
