@@ -1,24 +1,68 @@
-import { supabase } from './_lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase client para serverless (usa process.env, não import.meta.env)
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default async function handler(request, response) {
   const APP_ID = process.env.VITE_ONESIGNAL_APP_ID;
   const REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY;
   const GEMINI_KEY = process.env.VITE_GEMINI_API_KEY;
 
-  if (!APP_ID || !REST_API_KEY || !GEMINI_KEY) {
-    return response.status(500).json({ error: 'Faltam chaves de ambiente' });
+  // Log para debug
+  console.log('[PUSH] Iniciando...', {
+    hasAppId: !!APP_ID,
+    hasRestKey: !!REST_API_KEY,
+    hasGemini: !!GEMINI_KEY
+  });
+
+  if (!APP_ID || !REST_API_KEY) {
+    return response.status(500).json({ 
+      error: 'Faltam chaves de ambiente',
+      details: {
+        VITE_ONESIGNAL_APP_ID: APP_ID ? '✅' : '❌ FALTANDO',
+        ONESIGNAL_REST_API_KEY: REST_API_KEY ? '✅' : '❌ FALTANDO',
+        VITE_GEMINI_API_KEY: GEMINI_KEY ? '✅' : '❌ FALTANDO'
+      }
+    });
   }
 
-  // Qual é o período sendo processado neste gatilho? ('manha', 'tarde' ou 'noite')
-  const periodoRaw = request.query.periodo || 'manha'; 
-  const periodoValido = periodoRaw === 'manha' ? 'manhã' : periodoRaw;
+  // Determinar o período: pode vir por query string OU ser auto-detectado pelo horário BRT
+  let periodoValido = null;
+  const periodoRaw = request.query?.periodo;
 
-  // A data serve para o Supabase (garante que não geramos duas mensagens diárias iguais para todos da manhã)
-  // Como 'noite' vai disparar às 00:00 UTC, ajustamos para a data do Brasil diminuindo 4h.
-  const todayBRT = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString().split('T')[0];
+  if (periodoRaw) {
+    // Veio via query string
+    periodoValido = periodoRaw === 'manha' ? 'manhã' : periodoRaw;
+  } else {
+    // Auto-detectar pelo horário atual no Brasil (UTC-3)
+    const nowBRT = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    const hourBRT = nowBRT.getUTCHours();
+
+    if (hourBRT >= 6 && hourBRT < 9) {
+      periodoValido = 'manhã';
+    } else if (hourBRT >= 13 && hourBRT < 16) {
+      periodoValido = 'tarde';
+    } else if (hourBRT >= 20 && hourBRT < 23) {
+      periodoValido = 'noite';
+    } else {
+      // Fora do horário de envio — não dispara nada
+      return response.status(200).json({ 
+        message: `Fora do horário de envio. Hora BRT: ${hourBRT}:00. Nenhuma notificação enviada.`
+      });
+    }
+  }
+
+  // Data de hoje no fuso do Brasil
+  const nowBRT = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const todayBRT = nowBRT.toISOString().split('T')[0];
+
+  console.log(`[PUSH] Período: ${periodoValido} | Data BRT: ${todayBRT}`);
 
   try {
-    // Busca a mensagem oficial do dia (compartilhada entre manhã, tarde e noite)
+    // 1. Buscar ou gerar a mensagem oficial do dia
     let { data: message, error: fetchError } = await supabase
       .from('daily_messages')
       .select('*')
@@ -26,7 +70,11 @@ export default async function handler(request, response) {
       .single();
 
     if (!message || fetchError) {
-      console.log(`Gerando a mensagem oficial do dia...`);
+      if (!GEMINI_KEY) {
+        return response.status(500).json({ error: 'Sem chave Gemini para gerar mensagem' });
+      }
+
+      console.log('[PUSH] Gerando mensagem do dia via Gemini...');
       
       const prompt = `Você é um conselheiro cristão amoroso. Crie um devocional curto.
       Foque em esperança, fé e direção para o dia.
@@ -48,11 +96,17 @@ export default async function handler(request, response) {
         })
       });
 
-      const aiData = await aiResponse.json();
-      const resultText = aiData.candidates[0].content.parts[0].text;
-      const devocional = JSON.parse(resultText);
+      if (!aiResponse.ok) {
+        const errText = await aiResponse.text();
+        throw new Error(`Gemini API error: ${aiResponse.status} - ${errText}`);
+      }
 
-      // Salva no banco com o formato de Data correto (YYYY-MM-DD)
+      const aiData = await aiResponse.json();
+      const resultText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!resultText) throw new Error('Gemini não retornou texto válido');
+
+      const devocional = JSON.parse(resultText.replace(/```json/g, '').replace(/```/g, '').trim());
+
       const { data: inserted, error: insertError } = await supabase
         .from('daily_messages')
         .insert({
@@ -68,50 +122,71 @@ export default async function handler(request, response) {
 
       if (insertError) throw insertError;
       message = inserted;
+      console.log('[PUSH] Mensagem gerada e salva:', message.title);
     }
 
-    let tituloPush = "Deus tem uma palavra para ti! 🕊️";
-    if (periodoValido === 'manhã') tituloPush = "Bom dia! " + message.title + " 🌅";
-    if (periodoValido === 'tarde') tituloPush = "Boa tarde! " + message.title + " 🌤️";
-    if (periodoValido === 'noite') tituloPush = "Boa noite! " + message.title + " 🌙";
+    // 2. Montar título da notificação
+    let tituloPush = "Deus tem algo para ti! 🕊️";
+    let conteudoPush = message.verse || message.content?.substring(0, 100);
 
-    // 3. Montar e disparar APENAS para os usuários do período atual
-    const options = {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        Authorization: `Basic ${REST_API_KEY}`,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        app_id: APP_ID,
-        // Ao invés de mandar para todos, mandamos só pra quem tem a Tag:
-        filters: [
-          { "field": "tag", "key": "periodo", "relation": "=", "value": periodoValido }
-        ],
-        headings: { 
-          en: tituloPush, 
-          pt: tituloPush
-        },
-        contents: { 
-          en: message.verse, 
-          pt: message.verse
-        },
-        url: 'https://jesus-sigma.vercel.app'
-      })
+    if (periodoValido === 'manhã') {
+      tituloPush = `☀️ Bom dia! ${message.title}`;
+    } else if (periodoValido === 'tarde') {
+      tituloPush = `🌤️ Boa tarde! ${message.title}`;
+    } else if (periodoValido === 'noite') {
+      tituloPush = `🌙 Boa noite! ${message.title}`;
+    }
+
+    // 3. Disparar via OneSignal REST API — APENAS para o segmento do período
+    const pushPayload = {
+      app_id: APP_ID,
+      filters: [
+        { "field": "tag", "key": "periodo", "relation": "=", "value": periodoValido }
+      ],
+      headings: { en: tituloPush, pt: tituloPush },
+      contents: { en: conteudoPush, pt: conteudoPush },
+      url: 'https://jesus-sigma.vercel.app',
+      // Chrome Web Push specific
+      chrome_web_badge: 'https://jesus-sigma.vercel.app/logo.png',
+      chrome_web_icon: 'https://jesus-sigma.vercel.app/icon-512.png',
     };
 
-    const osRes = await fetch('https://onesignal.com/api/v1/notifications', options);
+    console.log('[PUSH] Enviando para OneSignal...', JSON.stringify(pushPayload, null, 2));
+
+    const osRes = await fetch('https://onesignal.com/api/v1/notifications', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Basic ${REST_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(pushPayload)
+    });
+
     const osJson = await osRes.json();
+    console.log('[PUSH] Resposta OneSignal:', JSON.stringify(osJson));
+
+    if (osJson.errors) {
+      return response.status(400).json({
+        operacao: `Erro no envio para ${periodoValido}`,
+        errors: osJson.errors,
+        payload_enviado: pushPayload
+      });
+    }
 
     return response.status(200).json({ 
       operacao: `Sucesso para usuários da ${periodoValido}`, 
       conteudo: message.title,
+      destinatarios: osJson.recipients || 0,
       disparo: osJson 
     });
 
   } catch (err) {
-    console.error(`Erro no robô de ${periodoValido}:`, err);
-    return response.status(500).json({ operacao: 'Falha', error: err.message });
+    console.error(`[PUSH] Erro no robô de ${periodoValido}:`, err);
+    return response.status(500).json({ 
+      operacao: 'Falha', 
+      error: err.message,
+      stack: err.stack 
+    });
   }
 }
