@@ -232,13 +232,20 @@ export function StoreProvider({ children }) {
           if (geminiKey) {
             setState(s => ({ ...s, debugInfo: 'Gerando voz (Google Neural2)...' }));
             
+            const ssmlText = `<speak><prosody rate="0.92" pitch="-1st">${devocional.prayer
+                .replace(/\. /g, '. <break time="700ms"/> ')
+                .replace(/, /g, ', <break time="350ms"/> ')
+                .replace(/; /g, '; <break time="400ms"/> ')
+                .replace(/Amen/g, '<break time="500ms"/>Amém')
+              }</prosody></speak>`;
+
             const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                input: { text: devocional.prayer },
+                input: { ssml: ssmlText },
                 voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-A', ssmlGender: 'FEMALE' },
-                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
+                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 1.0 }
               })
             });
 
@@ -334,15 +341,21 @@ export function StoreProvider({ children }) {
           // --- GERAÇÃO DE ÁUDIO (Google Cloud TTS Neural2) ---
           if (geminiKey) {
             try {
-              setState(s => ({ ...s, debugInfo: 'Gerando voz (Google Neural2)...' }));
+              setState(s => ({ ...s, debugInfo: 'Humanizando voz técnica...' }));
               
+              const ssmlText = `<speak><prosody rate="0.9" pitch="-1st">${customPrayer.prayer
+                .replace(/\. /g, '. <break time="800ms"/> ')
+                .replace(/, /g, ', <break time="400ms"/> ')
+                .replace(/; /g, '; <break time="500ms"/> ')
+              }</prosody></speak>`;
+
               const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  input: { text: customPrayer.prayer },
+                  input: { ssml: ssmlText },
                   voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
-                  audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
+                  audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 1.0 }
                 })
               });
               
@@ -452,13 +465,19 @@ export function StoreProvider({ children }) {
           setState(s => ({ ...s, debugInfo: 'Sintonizando áudio...' }));
           
           try {
+            const ssmlText = `<speak><prosody rate="0.9" pitch="-1st">${insight.prayer
+              .replace(/\. /g, '. <break time="800ms"/> ')
+              .replace(/, /g, ', <break time="400ms"/> ')
+              .replace(/; /g, '; <break time="500ms"/> ')
+            }</prosody></speak>`;
+
             const ttsResponse = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                input: { text: insight.prayer },
+                input: { ssml: ssmlText },
                 voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
-                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.95 }
+                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 1.0 }
               })
             });
 
