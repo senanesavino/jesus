@@ -19,9 +19,7 @@ export default function ProfileScreen() {
 
   return (
     <div className="screen" style={{ paddingTop: '20px' }}>
-      <center style={{ marginBottom: '32px' }}>
-        <img src="/logo.png" alt="Com Deus Hoje" style={{ height: '80px', width: 'auto' }} />
-      </center>
+
       {/* Profile header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
