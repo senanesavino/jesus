@@ -52,7 +52,7 @@ export default function PremiumScreen() {
         }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-            <img src="/logo.png" alt="Com Deus Hoje" style={{ height: '40px', width: 'auto', marginBottom: '16px' }} />
+            <img src="/logo.png" alt="Com Deus Hoje" style={{ height: '80px', width: 'auto', marginBottom: '8px' }} />
             <div style={{
               width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px',
               background: 'rgba(255,255,255,0.2)', display: 'flex',

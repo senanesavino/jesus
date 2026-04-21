@@ -70,7 +70,7 @@ export default function AuthScreen() {
           <img 
             src="/logo.png" 
             alt="Com Deus Hoje Logo" 
-            style={{ width: '220px', height: 'auto', margin: '0 auto -36px', display: 'block' }} 
+            style={{ width: '220px', height: 'auto', margin: '0 auto 16px', display: 'block' }} 
           />
           <p style={{
             color: 'var(--text-secondary)',
