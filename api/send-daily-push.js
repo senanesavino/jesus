@@ -183,6 +183,47 @@ export default async function handler(request, response) {
     console.log('[PUSH] Resposta OneSignal:', JSON.stringify(osJson));
 
     if (osJson.errors) {
+      // Se não encontrou inscritos com a tag, tenta enviar para TODOS os inscritos
+      const isNoSubscribers = osJson.errors.some(e => 
+        typeof e === 'string' && e.includes('not subscribed')
+      );
+      
+      if (isNoSubscribers) {
+        console.log('[PUSH] Nenhum inscrito com tag. Enviando para todos...');
+        
+        const fallbackPayload = {
+          app_id: APP_ID,
+          included_segments: ['Subscribed Users'],
+          headings: { en: tituloPush, pt: tituloPush },
+          contents: { en: conteudoPush, pt: conteudoPush },
+          url: 'https://jesus-sigma.vercel.app',
+          chrome_web_badge: 'https://jesus-sigma.vercel.app/logo.png',
+          chrome_web_icon: 'https://jesus-sigma.vercel.app/icon-512.png',
+        };
+
+        const fallbackRes = await fetch('https://api.onesignal.com/notifications', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Key ${REST_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(fallbackPayload)
+        });
+
+        const fallbackJson = await fallbackRes.json();
+        console.log('[PUSH] Fallback resposta:', JSON.stringify(fallbackJson));
+
+        if (!fallbackJson.errors) {
+          return response.status(200).json({
+            operacao: `Enviado para TODOS os inscritos (fallback)`,
+            conteudo: message.title,
+            destinatarios: fallbackJson.recipients || 0,
+            disparo: fallbackJson
+          });
+        }
+      }
+
       return response.status(400).json({
         operacao: `Erro no envio para ${periodoValido}`,
         errors: osJson.errors,
