@@ -598,7 +598,7 @@ export function StoreProvider({ children }) {
           src="/logo.png" 
           alt="Logo" 
           style={{ 
-            height: '160px', 
+            height: '220px', 
             width: 'auto',
             animation: 'pulse-soft 2s infinite ease-in-out'
           }} 
