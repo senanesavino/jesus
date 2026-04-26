@@ -65,8 +65,8 @@ export default function OnboardingScreen() {
       try {
         // Salvar a preferência do usuário como etiqueta invisível
         const userPeriod = preferences.period || 'manhã';
-        if (OneSignal && OneSignal.User) {
-          OneSignal.User.addTag('periodo', userPeriod);
+        if (OneSignal) {
+          await OneSignal.sendTag('periodo', userPeriod);
         }
 
         // Continua rodando no fundo para subir o prompt nativo

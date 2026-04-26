@@ -130,13 +130,27 @@ export default async function handler(request, response) {
           message = inserted;
           console.log('[PUSH] Mensagem gerada e salva:', message.title);
         } catch (geminiErr) {
-          // Gemini falhou — usa mensagem genérica para não travar o push
-          console.error('[PUSH] Gemini falhou, usando fallback:', geminiErr.message);
-          message = {
-            title: 'Deus está com você',
-            verse: 'Porque Eu sou o Senhor, o seu Deus, que o segura pela mão direita e lhe diz: Não tema, eu o ajudarei. — Isaías 41:13',
-            content: 'Não importa o que você esteja enfrentando hoje, Deus está caminhando ao seu lado.'
-          };
+          // Se falhou (pode ser porque o app já inseriu a mensagem nesse meio tempo)
+          // Tentamos buscar uma última vez antes de desistir
+          console.log('[PUSH] Tentativa de geração falhou, buscando mensagem existente...');
+          const { data: retryMessage } = await supabase
+            .from('daily_messages')
+            .select('*')
+            .eq('publish_date', todayBRT)
+            .single();
+
+          if (retryMessage) {
+            message = retryMessage;
+            console.log('[PUSH] Mensagem encontrada no retry:', message.title);
+          } else {
+            // Se realmente não tem mensagem, usa a genérica para não falhar o push
+            console.error('[PUSH] Gemini e busca falharam, usando fallback genérico:', geminiErr.message);
+            message = {
+              title: 'Deus está com você',
+              verse: 'Porque Eu sou o Senhor, o seu Deus, que o segura pela mão direita e lhe diz: Não tema, eu o ajudarei. — Isaías 41:13',
+              content: 'Não importa o que você esteja enfrentando hoje, Deus está caminhando ao seu lado.'
+            };
+          }
         }
       }
     }
@@ -183,59 +197,11 @@ export default async function handler(request, response) {
     console.log('[PUSH] Resposta OneSignal:', JSON.stringify(osJson));
 
     if (osJson.errors) {
-      // Se não encontrou inscritos com a tag, tenta enviar para TODOS os inscritos
-      const isNoSubscribers = osJson.errors.some(e => 
-        typeof e === 'string' && e.includes('not subscribed')
-      );
-      
-      if (isNoSubscribers) {
-        console.log('[PUSH] Nenhum inscrito com tag. Enviando para todos...');
-        
-        const fallbackPayload = {
-          app_id: APP_ID,
-          included_segments: ['Total Subscriptions', 'Subscribed Users', 'Active Users'],
-          headings: { en: tituloPush, pt: tituloPush },
-          contents: { en: conteudoPush, pt: conteudoPush },
-          url: 'https://jesus-sigma.vercel.app',
-          chrome_web_badge: 'https://jesus-sigma.vercel.app/logo.png',
-          chrome_web_icon: 'https://jesus-sigma.vercel.app/icon-512.png',
-        };
-
-        const fallbackRes = await fetch('https://api.onesignal.com/notifications', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Key ${REST_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(fallbackPayload)
-        });
-
-        const fallbackJson = await fallbackRes.json();
-        console.log('[PUSH] Fallback resposta:', JSON.stringify(fallbackJson));
-
-        if (!fallbackJson.errors) {
-          return response.status(200).json({
-            operacao: `Enviado para TODOS os inscritos (fallback)`,
-            conteudo: message.title,
-            destinatarios: fallbackJson.recipients || 0,
-            disparo: fallbackJson
-          });
-        } else {
-          // Retornar o erro do fallback para debug
-          return response.status(400).json({
-            operacao: `Erro no envio para TODOS (fallback failed)`,
-            errors_original: osJson.errors,
-            errors_fallback: fallbackJson.errors,
-            payload_enviado: fallbackPayload
-          });
-        }
-      }
-
-      return response.status(400).json({
-        operacao: `Erro no envio para ${periodoValido}`,
-        errors: osJson.errors,
-        payload_enviado: pushPayload
+      // ERRO IMPORTANTE: Não enviamos para todos se não houver inscritos no período.
+      // Isso evita que o usuário receba 3 notificações (manhã, tarde, noite) caso não tenha a tag.
+      return response.status(200).json({
+        operacao: `Nenhum usuário encontrado para o período ${periodoValido}. Notificação ignorada para evitar repetição.`,
+        errors: osJson.errors
       });
     }
 
