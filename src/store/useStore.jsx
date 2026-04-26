@@ -28,6 +28,7 @@ const initialState = {
   lastError: null,
   debugInfo: 'Pronto',
   userTrails: JSON.parse(localStorage.getItem('userTrails') || '{}'),
+  currentDuration: 0,
 };
 
 export function StoreProvider({ children }) {
@@ -66,8 +67,7 @@ export function StoreProvider({ children }) {
     const audio = globalAudioRef.current;
     if (audio) {
       console.log('[AUDIO] Metadados carregados. Duração:', audio.duration);
-      // Forçar atualização do estado para garantir que a UI saiba a duração
-      setState(s => ({ ...s, audioProgress: 0 }));
+      setState(s => ({ ...s, currentDuration: audio.duration, audioProgress: 0 }));
     }
   };
 
@@ -309,7 +309,7 @@ export function StoreProvider({ children }) {
 
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          setState(s => ({ ...s, lastError: null, debugInfo: attempt > 1 ? `Tentando novamente (${attempt}/3)...` : 'Iniciando IA...' }));
+          setState(s => ({ ...s, lastError: null, debugInfo: attempt > 1 ? `Tentando novamente (${attempt}/3)...' : 'Iniciando IA...' }));
           
           let customPrayer;
 
@@ -318,8 +318,8 @@ export function StoreProvider({ children }) {
             customPrayer = { title: topic, prayer: forcedText };
           } else {
             const prompt = isCustom 
-              ? `Você é um conselheiro cristão amoroso. Gere uma oração poderosa e confortante para alguém que está sentindo: "${topic}". Siga estritamente este formato JSON: {"title": "Oração para afastar a ${topic}", "prayer": "O texto completa da oração (máximo 400 caracteres)."}`
-              : `Você é um conselheiro cristão amoroso. Gere uma oração poderosa sobre o tema: "${topic}". Siga estritamente este formato JSON: {"title": "${topic}", "prayer": "O texto completo da oração (máximo 400 caracteres)."}`;
+              ? `Você é um conselheiro cristão amoroso. Gere uma oração poderosa e confortante baseada no que o usuário está sentindo ou pedindo: "${topic}". Siga estritamente este formato JSON: {"title": "Um título curto e amoroso para esta oração (máximo 5 palavras)", "prayer": "O texto completo da oração (máximo 400 caracteres)."}`
+              : `Você é um conselheiro cristão amoroso. Gere uma oração poderosa sobre o tema: "${topic}". Siga estritamente este formato JSON: {"title": "Título sobre ${topic}", "prayer": "O texto completo da oração (máximo 400 caracteres)."}`;
 
             const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
               method: 'POST',

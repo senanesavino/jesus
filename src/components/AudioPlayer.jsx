@@ -5,7 +5,7 @@ export default function AudioPlayer({ prayer, compact = false }) {
   const { 
     isPlaying, currentPrayer, setPlaying, setCurrentPrayer, 
     audioProgress, toggleFavorite, isFavorite, lastError, audio,
-    debugInfo, bgAudio
+    debugInfo, bgAudio, currentDuration
   } = useStore();
   
   const fav = isFavorite('prayers', prayer.id);
@@ -70,9 +70,9 @@ export default function AudioPlayer({ prayer, compact = false }) {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Tempo baseado no progresso global e duração estimada/real
-  const durationSeconds = prayer.durationSeconds || 120;
-  const currentTime = (audioProgress / 100) * durationSeconds;
+  // Tempo baseado no progresso global e duração real do áudio no store
+  const duration = isThisPrayerInStore ? currentDuration : 0;
+  const currentTime = (audioProgress / 100) * duration;
 
   if (compact) {
     return (
@@ -131,7 +131,7 @@ export default function AudioPlayer({ prayer, compact = false }) {
 
       <div className="progress-time">
         <span>{formatTime(isThisPlayingNow ? currentTime : 0)}</span>
-        <span>{prayer.duration}</span>
+        <span>{formatTime(duration)}</span>
       </div>
 
       <div className="audio-player-controls" style={{ marginTop: '16px' }}>

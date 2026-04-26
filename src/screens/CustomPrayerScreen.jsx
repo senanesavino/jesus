@@ -28,8 +28,6 @@ export default function CustomPrayerScreen() {
           id: 'custom-' + Date.now(),
           category: 'Personalizada',
           emoji: '✨',
-          duration: '1:00',
-          durationSeconds: 60,
           bgGradient: 'linear-gradient(135deg, #7B8F6A 0%, #5B7A8C 100%)'
         });
       }
