@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const activeTrails = trails.filter((t) => t.progress > 0).slice(0, 2);
 
   return (
-    <div className={`screen ${isNight ? 'screen-night' : ''} header-gradient`} style={{ paddingTop: '24px' }}>
+    <div className={`screen ${isNight ? 'screen-night' : ''} header-gradient`} style={{ paddingTop: '48px' }}>
       {/* Premium Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

@@ -254,8 +254,8 @@ export function StoreProvider({ children }) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 input: { ssml: ssmlText },
-                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-B', ssmlGender: 'MALE' },
-                audioConfig: { audioEncoding: 'MP3', pitch: -2.0, speakingRate: 0.90 }
+                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
+                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.92 }
               })
             });
 
@@ -364,8 +364,8 @@ export function StoreProvider({ children }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   input: { ssml: ssmlText },
-                  voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-B', ssmlGender: 'MALE' },
-                  audioConfig: { audioEncoding: 'MP3', pitch: -1.0, speakingRate: 0.90 }
+                  voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
+                  audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.92 }
                 })
               });
               
@@ -486,8 +486,8 @@ export function StoreProvider({ children }) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 input: { ssml: ssmlText },
-                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-B', ssmlGender: 'MALE' },
-                audioConfig: { audioEncoding: 'MP3', pitch: -1.5, speakingRate: 0.92 }
+                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
+                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 0.92 }
               })
             });
 
@@ -605,10 +605,18 @@ export function StoreProvider({ children }) {
 
     setPlaying: useCallback((playing) => {
       const audio = globalAudioRef.current || document.getElementById('main-audio-engine');
+      const bg = bgAudioEngine.current;
+
       if (playing) {
         if (audio) audio.play().catch(() => {});
+        if (bg) {
+          bg.volume = 0.3;
+          bg.loop = true;
+          bg.play().catch(() => {});
+        }
       } else {
         if (audio) audio.pause();
+        if (bg) bg.pause();
       }
     }, []),
     setCurrentPrayer: useCallback((prayer) => {
@@ -760,6 +768,7 @@ export function StoreProvider({ children }) {
         id="main-audio-engine"
         style={{ display: 'none' }}
       />
+      <audio id="piano-audio" src="/piano.mp3" loop style={{ display: 'none' }} />
     </StoreContext.Provider>
   );
 }
