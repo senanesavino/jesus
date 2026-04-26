@@ -171,7 +171,9 @@ export default async function handler(request, response) {
     const pushPayload = {
       app_id: APP_ID,
       filters: [
-        { "field": "tag", "key": "periodo", "relation": "=", "value": periodoValido }
+        { "field": "tag", "key": "periodo", "relation": "=", "value": periodoValido },
+        { "operator": "OR" },
+        { "field": "tag", "key": "periodo", "relation": "=", "value": periodoValido === 'manhã' ? 'manha' : periodoValido === 'tarde' ? 'tarde' : 'noite' }
       ],
       headings: { en: tituloPush, pt: tituloPush },
       contents: { en: conteudoPush, pt: conteudoPush },
