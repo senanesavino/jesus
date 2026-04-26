@@ -12,7 +12,7 @@ export default async function handler(request, response) {
 
   const payload = {
     app_id: APP_ID,
-    included_segments: ['Total Subscriptions'],
+    included_segments: ['Subscribed Users'],
     headings: { en: 'Teste de Conexão 🛠️', pt: 'Teste de Conexão 🛠️' },
     contents: { en: 'Se você recebeu isso, as notificações estão funcionando!', pt: 'Se você recebeu isso, as notificações estão funcionando!' },
     url: 'https://jesus-sigma.vercel.app',
