@@ -309,7 +309,7 @@ export function StoreProvider({ children }) {
 
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          setState(s => ({ ...s, lastError: null, debugInfo: attempt > 1 ? `Tentando novamente (${attempt}/3)...' : 'Iniciando IA...' }));
+          setState(s => ({ ...s, lastError: null, debugInfo: attempt > 1 ? `Tentando novamente (${attempt}/3)...` : 'Iniciando IA...' }));
           
           let customPrayer;
 
