@@ -56,8 +56,18 @@ export function StoreProvider({ children }) {
   // Monitorar tempo e estados do áudio diretamente do elemento DOM
   const onTimeUpdate = () => {
     const audio = globalAudioRef.current;
-    if (audio && audio.duration) {
-      setState(s => ({ ...s, audioProgress: (audio.currentTime / audio.duration) * 100 }));
+    if (audio && audio.duration && audio.duration > 0) {
+      const progress = (audio.currentTime / audio.duration) * 100;
+      setState(s => ({ ...s, audioProgress: progress }));
+    }
+  };
+
+  const onLoadedMetadata = () => {
+    const audio = globalAudioRef.current;
+    if (audio) {
+      console.log('[AUDIO] Metadados carregados. Duração:', audio.duration);
+      // Forçar atualização do estado para garantir que a UI saiba a duração
+      setState(s => ({ ...s, audioProgress: 0 }));
     }
   };
 
@@ -742,6 +752,7 @@ export function StoreProvider({ children }) {
       <audio
         ref={globalAudioRef}
         onTimeUpdate={onTimeUpdate}
+        onLoadedMetadata={onLoadedMetadata}
         onEnded={onEnded}
         onError={onError}
         onPlay={onPlay}
