@@ -76,17 +76,21 @@ export default function AudioPlayer({ prayer, compact = false }) {
 
   if (compact) {
     return (
-      <div className="flex items-center gap-md" style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
-        <button className="play-btn" onClick={handlePlay} style={{ width: 44, height: 44, fontSize: '0.875rem' }}>
+      <div className="flex items-center gap-md" style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', position: 'relative' }}>
+        <button className="play-btn" onClick={handlePlay} style={{ width: 44, height: 44, fontSize: '0.875rem', flexShrink: 0 }}>
           {isThisPlayingNow ? <Pause size={18} /> : <Play size={18} style={{ marginLeft: 2 }} />}
         </button>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: 4 }}>{prayer.title}</div>
-          <div className="progress-bar" style={{ margin: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {prayer.title}
+          </div>
+          <div className="progress-bar" style={{ margin: 0, height: '3px' }}>
             <div className="progress-bar-fill" style={{ width: `${isThisPlayingNow ? audioProgress : 0}%` }} />
           </div>
         </div>
-        <span className="text-caption">{prayer.duration}</span>
+        <span className="text-caption" style={{ minWidth: '35px', textAlign: 'right' }}>
+          {isThisPlayingNow ? formatTime(currentTime) : formatTime(duration || 120)}
+        </span>
       </div>
     );
   }
