@@ -244,8 +244,8 @@ export function StoreProvider({ children }) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 input: { ssml: ssmlText },
-                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-A', ssmlGender: 'FEMALE' },
-                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 1.0 }
+                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-B', ssmlGender: 'MALE' },
+                audioConfig: { audioEncoding: 'MP3', pitch: -2.0, speakingRate: 0.90 }
               })
             });
 
@@ -354,8 +354,8 @@ export function StoreProvider({ children }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   input: { ssml: ssmlText },
-                  voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
-                  audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 1.0 }
+                  voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-B', ssmlGender: 'MALE' },
+                  audioConfig: { audioEncoding: 'MP3', pitch: -1.0, speakingRate: 0.90 }
                 })
               });
               
@@ -476,8 +476,8 @@ export function StoreProvider({ children }) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 input: { ssml: ssmlText },
-                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-C', ssmlGender: 'FEMALE' },
-                audioConfig: { audioEncoding: 'MP3', pitch: 0, speakingRate: 1.0 }
+                voice: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-B', ssmlGender: 'MALE' },
+                audioConfig: { audioEncoding: 'MP3', pitch: -1.5, speakingRate: 0.92 }
               })
             });
 
