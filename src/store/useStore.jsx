@@ -192,21 +192,50 @@ export function StoreProvider({ children }) {
 
         // 2. Not found! Generate using Gemini AI (Automático pelo primeiro a abrir!)
         const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        const prompt = `Você é um conselheiro cristão amoroso. Crie um devocional diário curto focado em esperança e recomeço. Siga estritamente este formato JSON:
-        {
-          "title": "Um título encorajador de 4 palavras",
-          "verse": "O texto bíblico completo na versão NVI",
-          "reference": "Livro Capitulo:Versiculo",
-          "content": "A mensagem de 3 parágrafos curtos falando diretamente ao coração da pessoa. Use palavras gentis.",
-          "prayer": "Uma oração de 2 frases em primeira pessoa (Senhor, ajuda-me a...)"
-        }`;
+
+        // Temas rotativos por dia do ano para garantir variedade
+        const temasDiarios = [
+          'esperança e recomeço', 'fé e confiança em Deus', 'paz interior e descanso',
+          'força para os desafios', 'gratidão e louvor', 'amor de Deus por você',
+          'coragem para seguir em frente', 'perdão e libertação', 'propósito e direção divina',
+          'alegria mesmo nas dificuldades', 'paciência e espera no Senhor', 'renovação espiritual',
+          'proteção e cuidado de Deus', 'sabedoria para decisões', 'consolo nas aflições',
+          'vitória sobre o medo', 'comunhão com Deus', 'provisão divina',
+          'transformação interior', 'a presença de Deus no dia a dia', 'entrega e confiança total',
+          'superação e perseverança', 'graça suficiente', 'o poder da oração',
+          'descanso em Deus', 'fidelidade de Deus', 'a mão de Deus guiando',
+          'paz que excede o entendimento', 'força na fraqueza', 'o amor que nunca falha', 'caminhar com Deus',
+        ];
+
+        const now = new Date();
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+        const temaDoDia = temasDiarios[dayOfYear % temasDiarios.length];
+        const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+        const dataFormatada = `${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+
+        const prompt = `Você é um conselheiro cristão amoroso. Hoje é ${dataFormatada}.
+Crie um devocional ÚNICO e ORIGINAL para hoje, focado no tema: "${temaDoDia}".
+NÃO repita versículos comuns como Jeremias 29:11 ou Isaías 41:13. Busque versículos menos conhecidos mas poderosos.
+O título deve ser CRIATIVO e DIFERENTE — evite títulos genéricos como "Nova Esperança" ou "Novo Começo".
+
+Siga estritamente este formato JSON:
+{
+  "title": "Um título criativo e original de 3 a 5 palavras sobre ${temaDoDia}",
+  "verse": "O texto bíblico completo na versão NVI (escolha um versículo DIFERENTE e pouco usado)",
+  "reference": "Livro Capitulo:Versiculo",
+  "content": "A mensagem de 3 parágrafos curtos falando diretamente ao coração da pessoa sobre ${temaDoDia}. Use palavras gentis.",
+  "prayer": "Uma oração de 2-3 frases em primeira pessoa (Senhor, ajuda-me a...)"
+}`;
 
         const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: 'application/json' }
+            generationConfig: { 
+              responseMimeType: 'application/json',
+              temperature: 0.9
+            }
           })
         });
 

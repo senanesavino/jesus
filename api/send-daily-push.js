@@ -1,10 +1,45 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase client para serverless — v2 (21/04/2026)
+// Supabase client para serverless
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.VITE_SUPABASE_ANON_KEY
 );
+
+// Temas rotativos para garantir variedade diária (rotaciona pelo dia do ano)
+const TEMAS_DIARIOS = [
+  'esperança e recomeço',
+  'fé e confiança em Deus',
+  'paz interior e descanso',
+  'força para os desafios',
+  'gratidão e louvor',
+  'amor de Deus por você',
+  'coragem para seguir em frente',
+  'perdão e libertação',
+  'propósito e direção divina',
+  'alegria mesmo nas dificuldades',
+  'paciência e espera no Senhor',
+  'renovação espiritual',
+  'proteção e cuidado de Deus',
+  'sabedoria para decisões',
+  'consolo nas aflições',
+  'vitória sobre o medo',
+  'comunhão com Deus',
+  'provisão divina',
+  'transformação interior',
+  'a presença de Deus no dia a dia',
+  'entrega e confiança total',
+  'superação e perseverança',
+  'graça suficiente',
+  'o poder da oração',
+  'descanso em Deus',
+  'fidelidade de Deus',
+  'a mão de Deus guiando',
+  'paz que excede o entendimento',
+  'força na fraqueza',
+  'o amor que nunca falha',
+  'caminhar com Deus',
+];
 
 export default async function handler(request, response) {
   const APP_ID = process.env.VITE_ONESIGNAL_APP_ID;
@@ -59,10 +94,14 @@ export default async function handler(request, response) {
   const nowBRT = new Date(Date.now() - 3 * 60 * 60 * 1000);
   const todayBRT = nowBRT.toISOString().split('T')[0];
 
-  console.log(`[PUSH] Período: ${periodoValido} | Data BRT: ${todayBRT}`);
+  // Calcular o tema do dia (rotaciona pelo dia do ano)
+  const dayOfYear = Math.floor((nowBRT - new Date(nowBRT.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+  const temaDoDia = TEMAS_DIARIOS[dayOfYear % TEMAS_DIARIOS.length];
+
+  console.log(`[PUSH] Período: ${periodoValido} | Data BRT: ${todayBRT} | Tema: ${temaDoDia}`);
 
   try {
-    // 1. Buscar ou gerar a mensagem oficial do dia
+    // 1. Buscar a mensagem oficial do dia no banco
     let { data: message, error: fetchError } = await supabase
       .from('daily_messages')
       .select('*')
@@ -70,69 +109,100 @@ export default async function handler(request, response) {
       .single();
 
     if (!message || fetchError) {
+      console.log('[PUSH] Mensagem do dia não encontrada no banco. Gerando via Gemini...');
+
       if (!GEMINI_KEY) {
-        // Sem Gemini? Envia notificação genérica mesmo assim
-        console.log('[PUSH] Sem Gemini e sem mensagem do dia. Usando mensagem genérica.');
-        message = {
+        // Sem Gemini? Busca a última mensagem disponível no banco
+        console.log('[PUSH] Sem chave Gemini. Buscando última mensagem disponível...');
+        const { data: lastMsg } = await supabase
+          .from('daily_messages')
+          .select('*')
+          .order('publish_date', { ascending: false })
+          .limit(1)
+          .single();
+
+        message = lastMsg || {
           title: 'Deus está com você',
-          verse: 'Porque Eu sou o Senhor, o seu Deus, que o segura pela mão direita e lhe diz: Não tema, eu o ajudarei. — Isaías 41:13',
+          verse: 'Porque Eu sou o Senhor, o seu Deus, que o segura pela mão direita e lhe diz: Não tema, eu o ajudarei.',
+          reference: 'Isaías 41:13',
           content: 'Não importa o que você esteja enfrentando hoje, Deus está caminhando ao seu lado.'
         };
       } else {
-        // Tenta gerar via Gemini, mas se falhar, usa mensagem genérica
+        // Gerar via Gemini com DATA e TEMA ESPECÍFICO para garantir unicidade
         try {
-          console.log('[PUSH] Gerando mensagem do dia via Gemini...');
-          
-          const prompt = `Você é um conselheiro cristão amoroso. Crie um devocional curto.
-          Foque em esperança, fé e direção para o dia.
-          Siga estritamente este formato JSON:
-          {
-            "title": "Um título encorajador de 4 palavras no máximo",
-            "verse": "O texto bíblico completo na versão NVI",
-            "reference": "Livro Capitulo:Versiculo",
-            "content": "A mensagem de 3 parágrafos curtos falando diretamente ao coração.",
-            "prayer": "Uma oração de 2 frases."
-          }`;
+          // Formatar a data para o prompt (ex: "28 de abril de 2026")
+          const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+          const dataFormatada = `${nowBRT.getUTCDate()} de ${meses[nowBRT.getUTCMonth()]} de ${nowBRT.getUTCFullYear()}`;
+
+          const prompt = `Você é um conselheiro cristão amoroso. Hoje é ${dataFormatada}.
+Crie um devocional ÚNICO e ORIGINAL para hoje, focado especificamente no tema: "${temaDoDia}".
+NÃO repita versículos comuns como Jeremias 29:11 ou Isaías 41:13. Busque versículos menos conhecidos mas igualmente poderosos.
+O título deve ser CRIATIVO e DIFERENTE — evite títulos genéricos como "Nova Esperança" ou "Novo Começo".
+
+Siga estritamente este formato JSON:
+{
+  "title": "Um título criativo e original de 3 a 5 palavras sobre ${temaDoDia}",
+  "verse": "O texto bíblico completo na versão NVI (escolha um versículo DIFERENTE e pouco usado)",
+  "reference": "Livro Capitulo:Versiculo",
+  "content": "A mensagem de 3 parágrafos curtos falando diretamente ao coração da pessoa sobre ${temaDoDia}. Use palavras gentis e personalize para o dia de hoje.",
+  "prayer": "Uma oração de 2-3 frases em primeira pessoa (Senhor, ajuda-me a...)"
+}`;
 
           const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ role: 'user', parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json' }
+              generationConfig: { 
+                responseMimeType: 'application/json',
+                temperature: 0.9 // Mais criatividade para evitar repetição
+              }
             })
           });
 
           if (!aiResponse.ok) {
-            throw new Error(`Gemini ${aiResponse.status}`);
+            const errorText = await aiResponse.text();
+            throw new Error(`Gemini ${aiResponse.status}: ${errorText.substring(0, 200)}`);
           }
 
           const aiData = await aiResponse.json();
           const resultText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!resultText) throw new Error('Gemini sem texto');
+          if (!resultText) throw new Error('Gemini não retornou texto');
 
           const devocional = JSON.parse(resultText.replace(/```json/g, '').replace(/```/g, '').trim());
 
+          // Inserir no banco (usar upsert para evitar conflito se outro processo já inseriu)
           const { data: inserted, error: insertError } = await supabase
             .from('daily_messages')
-            .insert({
+            .upsert({
               publish_date: todayBRT,
               title: devocional.title,
               verse: devocional.verse,
               reference: devocional.reference,
               content: devocional.content,
               prayer: devocional.prayer
-            })
+            }, { onConflict: 'publish_date' })
             .select()
             .single();
 
-          if (insertError) throw insertError;
-          message = inserted;
-          console.log('[PUSH] Mensagem gerada e salva:', message.title);
+          if (insertError) {
+            console.error('[PUSH] Erro ao inserir mensagem:', insertError.message);
+            // Tenta buscar novamente caso outro processo tenha inserido
+            const { data: retryMsg } = await supabase
+              .from('daily_messages')
+              .select('*')
+              .eq('publish_date', todayBRT)
+              .single();
+            message = retryMsg || { ...devocional, title: devocional.title };
+          } else {
+            message = inserted;
+          }
+
+          console.log('[PUSH] ✅ Mensagem gerada e salva:', message.title);
         } catch (geminiErr) {
-          // Se falhou (pode ser porque o app já inseriu a mensagem nesse meio tempo)
-          // Tentamos buscar uma última vez antes de desistir
-          console.log('[PUSH] Tentativa de geração falhou, buscando mensagem existente...');
+          console.error('[PUSH] ❌ Gemini falhou:', geminiErr.message);
+          
+          // Tentativa final: buscar no banco (pode ter sido inserida por outro processo)
           const { data: retryMessage } = await supabase
             .from('daily_messages')
             .select('*')
@@ -143,21 +213,36 @@ export default async function handler(request, response) {
             message = retryMessage;
             console.log('[PUSH] Mensagem encontrada no retry:', message.title);
           } else {
-            // Se realmente não tem mensagem, usa a genérica para não falhar o push
-            console.error('[PUSH] Gemini e busca falharam, usando fallback genérico:', geminiErr.message);
-            message = {
-              title: 'Deus está com você',
-              verse: 'Porque Eu sou o Senhor, o seu Deus, que o segura pela mão direita e lhe diz: Não tema, eu o ajudarei. — Isaías 41:13',
-              content: 'Não importa o que você esteja enfrentando hoje, Deus está caminhando ao seu lado.'
-            };
+            // Último recurso: buscar a mensagem mais recente do banco
+            const { data: lastMsg } = await supabase
+              .from('daily_messages')
+              .select('*')
+              .order('publish_date', { ascending: false })
+              .limit(1)
+              .single();
+
+            if (lastMsg) {
+              message = lastMsg;
+              console.log('[PUSH] Usando última mensagem disponível:', message.title);
+            } else {
+              // Realmente não tem nada — usa genérica
+              message = {
+                title: 'Deus está com você hoje',
+                verse: 'O Senhor é o meu pastor e nada me faltará.',
+                reference: 'Salmos 23:1',
+                content: 'Não importa o que você esteja enfrentando, Deus caminha ao seu lado.'
+              };
+            }
           }
         }
       }
+    } else {
+      console.log('[PUSH] ✅ Mensagem do dia já existe no banco:', message.title);
     }
 
-    // 2. Montar título da notificação
-    let tituloPush = "Deus tem algo para ti! 🕊️";
-    let conteudoPush = message.verse || message.content?.substring(0, 100);
+    // 2. Montar título e conteúdo da notificação
+    let tituloPush = `🕊️ ${message.title}`;
+    let conteudoPush = message.verse || message.content?.substring(0, 120);
 
     if (periodoValido === 'manhã') {
       tituloPush = `☀️ Bom dia! ${message.title}`;
@@ -165,6 +250,11 @@ export default async function handler(request, response) {
       tituloPush = `🌤️ Boa tarde! ${message.title}`;
     } else if (periodoValido === 'noite') {
       tituloPush = `🌙 Boa noite! ${message.title}`;
+    }
+
+    // Truncar conteúdo se for muito longo para notificação
+    if (conteudoPush && conteudoPush.length > 150) {
+      conteudoPush = conteudoPush.substring(0, 147) + '...';
     }
 
     // 3. Disparar via OneSignal REST API — APENAS para o segmento do período
@@ -199,10 +289,9 @@ export default async function handler(request, response) {
     console.log('[PUSH] Resposta OneSignal:', JSON.stringify(osJson));
 
     if (osJson.errors) {
-      // ERRO IMPORTANTE: Não enviamos para todos se não houver inscritos no período.
-      // Isso evita que o usuário receba 3 notificações (manhã, tarde, noite) caso não tenha a tag.
       return response.status(200).json({
-        operacao: `Nenhum usuário encontrado para o período ${periodoValido}. Notificação ignorada para evitar repetição.`,
+        operacao: `Nenhum usuário encontrado para o período ${periodoValido}. Notificação ignorada.`,
+        mensagem_gerada: message.title,
         errors: osJson.errors
       });
     }
@@ -210,6 +299,8 @@ export default async function handler(request, response) {
     return response.status(200).json({ 
       operacao: `Sucesso para usuários da ${periodoValido}`, 
       conteudo: message.title,
+      tema: temaDoDia,
+      data: todayBRT,
       destinatarios: osJson.recipients || 0,
       disparo: osJson 
     });
