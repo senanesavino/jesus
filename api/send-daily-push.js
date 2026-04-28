@@ -172,6 +172,9 @@ Siga estritamente este formato JSON:
           const devocional = JSON.parse(resultText.replace(/```json/g, '').replace(/```/g, '').trim());
 
           // Inserir no banco
+          // É necessário autenticar anonimamente para ter permissão de INSERT (RLS policy)
+          await supabase.auth.signInAnonymously();
+          
           const { data: inserted, error: insertError } = await supabase
             .from('daily_messages')
             .insert({
