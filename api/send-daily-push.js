@@ -171,29 +171,29 @@ Siga estritamente este formato JSON:
 
           const devocional = JSON.parse(resultText.replace(/```json/g, '').replace(/```/g, '').trim());
 
-          // Inserir no banco (usar upsert para evitar conflito se outro processo já inseriu)
+          // Inserir no banco
           const { data: inserted, error: insertError } = await supabase
             .from('daily_messages')
-            .upsert({
+            .insert({
               publish_date: todayBRT,
               title: devocional.title,
               verse: devocional.verse,
               reference: devocional.reference,
               content: devocional.content,
               prayer: devocional.prayer
-            }, { onConflict: 'publish_date' })
+            })
             .select()
             .single();
 
           if (insertError) {
             console.error('[PUSH] Erro ao inserir mensagem:', insertError.message);
-            // Tenta buscar novamente caso outro processo tenha inserido
+            // Se falhou por duplicata, busca a existente
             const { data: retryMsg } = await supabase
               .from('daily_messages')
               .select('*')
               .eq('publish_date', todayBRT)
               .single();
-            message = retryMsg || { ...devocional, title: devocional.title };
+            message = retryMsg || devocional;
           } else {
             message = inserted;
           }
